@@ -15,11 +15,15 @@ use LogicException;
 class ArrayRandom implements Random
 {
     /**
+     * 乱数列として順番に出力する整数の配列です。
+     *
      * @var int[]
      */
     private $seq;
 
     /**
+     * 次に出力する配列のインデックスです。
+     *
      * @var int
      */
     private $index;
@@ -27,7 +31,8 @@ class ArrayRandom implements Random
     /**
      * 指定された整数配列を乱数列として使用する ArrayRandom オブジェクトを生成します。
      *
-     * @param int[] $seq
+     * @param int[] $seq 乱数列として順番に出力する整数の配列
+     * @throws InvalidArgumentException 空の配列が指定された場合
      */
     public function __construct(array $seq)
     {
@@ -42,7 +47,8 @@ class ArrayRandom implements Random
     /**
      * 次の乱数を取得します。
      *
-     * @return int
+     * @return int 配列から取得した次の整数
+     * @throws LogicException 配列内の値が 0 未満、または mt_getrandmax() を超えている場合
      */
     public function next(): int
     {

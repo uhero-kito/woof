@@ -11,17 +11,16 @@ namespace Woof\System;
 class DefaultRandom implements Random
 {
     /**
-     * このクラスは getInstance() で初期化します。
+     * 外部からのインスタンス生成を禁止することで getInstance() の使用を強制します。
      */
     private function __construct()
     {
-
     }
 
     /**
      * 唯一の DefaultRandom インスタンスを返します。
      *
-     * @return DefaultRandom
+     * @return DefaultRandom このクラスの唯一のインスタンス
      */
     public static function getInstance(): self
     {
@@ -35,7 +34,7 @@ class DefaultRandom implements Random
     /**
      * この実装は引数なしの mt_rand() の結果をそのまま返します。
      *
-     * @return int
+     * @return int mt_rand() によって生成された乱数
      */
     public function next(): int
     {

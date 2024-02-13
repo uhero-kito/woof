@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class ArrayRandomTest extends TestCase
 {
     /**
-     * コンストラクタ引数に空の配列を指定した場合、InvalidArgumentException をスローします。
+     * コンストラクタ引数に空の配列を指定した場合、InvalidArgumentException をスローすることを確認します。
      *
      * @covers ::__construct
      */
@@ -23,7 +23,7 @@ class ArrayRandomTest extends TestCase
     }
 
     /**
-     * next() を実行するたびに指定された配列の中身を順番に参照します。
+     * next() を実行するたびに指定された配列の中身を順番に参照することを確認します。
      *
      * @covers ::__construct
      * @covers ::next
@@ -42,7 +42,7 @@ class ArrayRandomTest extends TestCase
     }
 
     /**
-     * コンストラクタ引数の配列内に範囲外の値が含まれていた場合に LogicException をスローします。
+     * コンストラクタ引数の配列内に範囲外の値が含まれていた場合に LogicException をスローすることを確認します。
      *
      * @covers ::__construct
      * @covers ::next
