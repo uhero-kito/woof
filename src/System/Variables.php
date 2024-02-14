@@ -4,6 +4,10 @@ namespace Woof\System;
 
 /**
  * PHP の各種グローバル変数にアクセスするためのクラスです。
+ *
+ * スーパーグローバル変数 ($_SERVER, $_GET, $_POST など) への直接アクセスを排除し、
+ * テスト時などに任意のパラメータを注入可能にする (副作用を隔離する)
+ * ために使用されるイミュータブルな値オブジェクトです。
  */
 class Variables
 {
@@ -63,10 +67,12 @@ class Variables
     }
 
     /**
+     * 指定された値を保持する Variables インスタンスを生成します。
+     *
      * このメソッドは VariablesBuilder::build() から参照されます。
      *
-     * @param VariablesBuilder $builder
-     * @return Variables
+     * @param VariablesBuilder $builder 値が設定された VariablesBuilder インスタンス
+     * @return Variables 構築された Variables インスタンス
      * @ignore
      */
     public static function newInstance(VariablesBuilder $builder): self
@@ -82,9 +88,9 @@ class Variables
     }
 
     /**
-     * 現在定義されている各種グローバル定数を参照する Variables インスタンスを返します。
+     * 現在定義されている各種グローバル変数を参照する Variables インスタンスを返します。
      *
-     * @return Variables
+     * @return Variables 現在のスーパーグローバル変数を保持する Variables インスタンス
      * @codeCoverageIgnore
      */
     public static function getDefaultInstance(): self
@@ -103,7 +109,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_SERVER に相当する配列を取得します。
+     *
+     * @return array $_SERVER に相当する配列
      */
     public function getServer(): array
     {
@@ -111,7 +119,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_ENV に相当する配列を取得します。
+     *
+     * @return array $_ENV に相当する配列
      */
     public function getEnv(): array
     {
@@ -119,7 +129,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_POST に相当する配列を取得します。
+     *
+     * @return array $_POST に相当する配列
      */
     public function getPost(): array
     {
@@ -127,7 +139,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_GET に相当する配列を取得します。
+     *
+     * @return array $_GET に相当する配列
      */
     public function getGet(): array
     {
@@ -135,7 +149,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_COOKIE に相当する配列を取得します。
+     *
+     * @return array $_COOKIE に相当する配列
      */
     public function getCookie(): array
     {
@@ -143,7 +159,9 @@ class Variables
     }
 
     /**
-     * @return array
+     * グローバル変数 $_FILES に相当する配列を取得します。
+     *
+     * @return array $_FILES に相当する配列
      */
     public function getFiles(): array
     {

@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class VariablesTest extends TestCase
 {
     /**
+     * ビルダー経由で設定された $_SERVER に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getServer
@@ -26,6 +28,8 @@ class VariablesTest extends TestCase
     }
 
     /**
+     * ビルダー経由で設定された $_ENV に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getEnv
@@ -41,6 +45,8 @@ class VariablesTest extends TestCase
     }
 
     /**
+     * ビルダー経由で設定された $_GET に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getGet
@@ -56,6 +62,8 @@ class VariablesTest extends TestCase
     }
 
     /**
+     * ビルダー経由で設定された $_POST に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getPost
@@ -71,6 +79,8 @@ class VariablesTest extends TestCase
     }
 
     /**
+     * ビルダー経由で設定された $_COOKIE に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getCookie
@@ -86,6 +96,8 @@ class VariablesTest extends TestCase
     }
 
     /**
+     * ビルダー経由で設定された $_FILES に相当する配列が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getFiles
