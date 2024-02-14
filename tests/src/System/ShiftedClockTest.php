@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class ShiftedClockTest extends TestCase
 {
     /**
+     * 基準の Clock から指定された秒数だけシフトされた時刻が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getTime
      */
@@ -21,6 +23,8 @@ class ShiftedClockTest extends TestCase
     }
 
     /**
+     * コンストラクタで指定した基準の Clock オブジェクトが返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getOriginal
      */
@@ -32,7 +36,7 @@ class ShiftedClockTest extends TestCase
     }
 
     /**
-     * コンストラクタ引数を省略した場合は DefaultClock のインスタンスが適用されます。
+     * コンストラクタ引数を省略した場合は DefaultClock のインスタンスが適用されることを確認します。
      *
      * @covers ::__construct
      * @covers ::getOriginal

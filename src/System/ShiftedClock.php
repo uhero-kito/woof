@@ -26,8 +26,8 @@ class ShiftedClock implements Clock
      * 進ませる (または遅らせる) 秒数およびその基準の時刻を提供する Clock を指定して、新しいインスタンスを作成します。
      * 第 2 引数を省略した場合は DefaultClock のインスタンスが適用されます。
      *
-     * @param int $diff
-     * @param Clock $original
+     * @param int $diff 基準の時刻から進ませる (正の値) または遅らせる (負の値) 秒数
+     * @param Clock|null $original 基準となる時刻を提供する Clock オブジェクト
      */
     public function __construct(int $diff, Clock $original = null)
     {
@@ -38,7 +38,7 @@ class ShiftedClock implements Clock
     /**
      * このオブジェクトの現在時刻を返します。
      *
-     * @return int
+     * @return int 基準の時刻から指定された秒数だけシフトされた Unix Time
      */
     public function getTime(): int
     {
@@ -48,7 +48,7 @@ class ShiftedClock implements Clock
     /**
      * 基準となる Clock オブジェクトを返します。
      *
-     * @return Clock
+     * @return Clock 基準として保持している Clock オブジェクト
      */
     public function getOriginal(): Clock
     {
