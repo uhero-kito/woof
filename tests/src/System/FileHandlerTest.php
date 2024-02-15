@@ -7,15 +7,25 @@ use PHPUnit\Framework\TestCase;
 use TestHelper;
 
 /**
+ * FileHandler のテストです。
+ *
+ * このテストクラスでテスト時に物理ファイルの入出力を行うため
+ * setUp() 内でテスト用の一時ディレクトリのクリーニングとテストデータのコピーを行います。
+ *
  * @coversDefaultClass Woof\System\FileHandler
  */
 class FileHandlerTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
+    /**
+     * テスト用の一時ディレクトリの準備とテストデータのコピーを行います。
+     */
     protected function setUp(): void
     {
         $datadir = TEST_DATA_DIR . "/System/FileHandler";
@@ -27,6 +37,8 @@ class FileHandlerTest extends TestCase
     }
 
     /**
+     * コンストラクタ引数に空文字列を指定した場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::__construct
      */
     public function testConstructFailByEmptyName(): void
@@ -36,6 +48,8 @@ class FileHandlerTest extends TestCase
     }
 
     /**
+     * コンストラクタ引数に存在しないディレクトリ名を指定した場合に FileSystemException がスローされることを確認します。
+     *
      * @covers ::__construct
      */
     public function testConstructFailByNonExistingName(): void
@@ -45,8 +59,10 @@ class FileHandlerTest extends TestCase
     }
 
     /**
+     * 指定された相対パスが正しい絶対パスに変換されることを確認します。
+     *
      * @covers ::__construct
-     * @covers ::formatFullPath
+     * @covers ::formatFullpath
      */
     public function testFormatFullPath(): void
     {
@@ -56,10 +72,12 @@ class FileHandlerTest extends TestCase
     }
 
     /**
-     * @param string $path
-     * @param string $expected
+     * パス内の不要なスラッシュやドット (".", "..") が正しく解決されることを確認します。
+     *
+     * @param string $path 入力となる相対パス
+     * @param string $expected 期待される解決後の相対パス
      * @covers ::__construct
-     * @covers ::formatFullPath
+     * @covers ::formatFullpath
      * @covers ::cleanPath
      * @dataProvider provideTestCleanPath
      */
@@ -71,7 +89,9 @@ class FileHandlerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testCleanPath() のためのテストデータ (入力パスと期待される結果のペア) を提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestCleanPath(): array
     {
@@ -83,9 +103,11 @@ class FileHandlerTest extends TestCase
     }
 
     /**
-     * @param string $path
+     * 不正なパスを指定した場合に InvalidArgumentException がスローされることを確認します。
+     *
+     * @param string $path 不正な相対パス
      * @covers ::__construct
-     * @covers ::formatFullPath
+     * @covers ::formatFullpath
      * @dataProvider provideTestFormatFullPathFail
      */
     public function testFormatFullPathFail(string $path): void
@@ -96,7 +118,9 @@ class FileHandlerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormatFullPathFail() のための不正なパスのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormatFullPathFail(): array
     {
@@ -105,7 +129,10 @@ class FileHandlerTest extends TestCase
             ["/./..///.././"],
         ];
     }
+
     /**
+     * 指定したパスのファイルの内容が正しく取得できることと、存在しない場合は空文字列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      */
@@ -119,6 +146,8 @@ class FileHandlerTest extends TestCase
     }
 
     /**
+     * 指定したファイルが存在するかどうかを正しく判定できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::contains
      */
@@ -130,6 +159,8 @@ class FileHandlerTest extends TestCase
     }
 
     /**
+     * 指定したパスにファイルが新規作成され、内容が書き込まれることを確認します。
+     *
      * @covers ::__construct
      * @covers ::put
      * @covers ::<private>
@@ -139,13 +170,15 @@ class FileHandlerTest extends TestCase
         $tmpdir   = $this->tmpdir;
         $testfile = "{$tmpdir}/test02/newfile.txt";
         $obj      = new FileHandler($tmpdir);
-        $this->assertFileNotExists($testfile);
+        $this->assertFileDoesNotExist($testfile);
         $obj->put("test02/newfile.txt", "This is test");
         $this->assertFileExists($testfile);
         $this->assertSame("This is test", file_get_contents($testfile));
     }
 
     /**
+     * 既存のファイルに内容が正しく追記されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::append
      */
