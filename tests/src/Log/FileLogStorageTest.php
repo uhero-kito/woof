@@ -7,25 +7,41 @@ use TestHelper;
 use Woof\System\FileSystemException;
 
 /**
+ * FileLogStorage のテストです。
+ *
+ * このテストクラスではテスト時に物理ファイルの入出力が発生するため、
+ * setUp() で一時ディレクトリのクリーニングを行っています。
+ * また、異なる日付におけるファイル名生成の挙動を確認するため、一時的にシステムのタイムゾーンを
+ * "Asia/Tokyo" に変更しています。
+ *
  * @coversDefaultClass Woof\Log\FileLogStorage
  */
 class FileLogStorageTest extends TestCase
 {
     /**
+     * テスト用の一時ファイルを出力するディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
      * @var string
      */
     private $defaultTimezone;
 
     /**
+     * テストデータが配置されるベースディレクトリです。
+     *
      * @var string
      */
     const DATA_DIR = TEST_DATA_DIR . "/Log/FileLogStorage";
 
+    /**
+     * テスト用のディレクトリの準備とタイムゾーンの固定を行います。
+     */
     public function setUp(): void
     {
         $tmpdir = self::DATA_DIR . "/tmp";
@@ -35,6 +51,9 @@ class FileLogStorageTest extends TestCase
         $this->defaultTimezone = ini_set("timezone", "Asia/Tokyo");
     }
 
+    /**
+     * 固定したタイムゾーンを元の状態に戻します。
+     */
     public function tearDown(): void
     {
         ini_set("timezone", $this->defaultTimezone);
@@ -42,7 +61,7 @@ class FileLogStorageTest extends TestCase
 
     /**
      * コンストラクタ引数に存在しないディレクトリ名を指定した場合に
-     * FileSystemException をスローします。
+     * FileSystemException がスローされることを確認します。
      *
      * @covers ::__construct
      */
@@ -53,7 +72,7 @@ class FileLogStorageTest extends TestCase
     }
 
     /**
-     * 不正な prefix を指定した場合に InvalidArgumentException をスローします。
+     * 不正な prefix を指定した場合に InvalidArgumentException がスローされることを確認します。
      *
      * @covers ::__construct
      */
@@ -64,6 +83,8 @@ class FileLogStorageTest extends TestCase
     }
 
     /**
+     * 日付をまたぐ複数のログを書き込み、それぞれ正しい日付のファイル名で出力されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::write
      * @covers ::<private>
@@ -89,7 +110,7 @@ class FileLogStorageTest extends TestCase
     }
 
     /**
-     * 第 2 引数を指定することでログファイル名をカスタマイズします。
+     * 第 2 引数を指定することでログファイル名をカスタマイズできることを確認します。
      *
      * @covers ::__construct
      * @covers ::write

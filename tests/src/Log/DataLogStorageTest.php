@@ -8,25 +8,43 @@ use TestHelper;
 use Woof\FileDataStorage;
 
 /**
+ * DataLogStorage のテストです。
+ *
+ * このテストクラスでは DataStorage の具象クラス (FileDataStorage)
+ * を通じて物理ファイルの入出力が発生するため、
+ * setUp() で一時ディレクトリのクリーニングを行っています。
+ *
+ * また、異なる日付におけるファイル名生成の挙動を確認するため、一時的にシステムのタイムゾーンを
+ * "Asia/Tokyo" に変更しています。
+ *
  * @coversDefaultClass Woof\Log\DataLogStorage
  */
 class DataLogStorageTest extends TestCase
 {
     /**
+     * テスト用の一時ファイルを出力するディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
      * @var string
      */
     private $defaultTimezone;
 
     /**
+     * テストデータが配置されるベースディレクトリです。
+     *
      * @var string
      */
     const DATA_DIR = TEST_DATA_DIR . "/Log/DataLogStorage";
 
+    /**
+     * テスト用の一時ディレクトリの準備とタイムゾーンの固定を行います。
+     */
     public function setUp(): void
     {
         $tmpdir = self::DATA_DIR . "/tmp";
@@ -36,13 +54,16 @@ class DataLogStorageTest extends TestCase
         $this->defaultTimezone = ini_set("timezone", "Asia/Tokyo");
     }
 
+    /**
+     * 固定したタイムゾーンを元の状態に戻します。
+     */
     public function tearDown(): void
     {
         ini_set("timezone", $this->defaultTimezone);
     }
 
     /**
-     * prefix が空文字列の場合に InvalidArgumentException をスローします。
+     * コンストラクタの prefix に空文字列を指定した場合に InvalidArgumentException がスローされることを確認します。
      *
      * @covers ::__construct
      */
@@ -53,6 +74,8 @@ class DataLogStorageTest extends TestCase
     }
 
     /**
+     * 日付をまたぐ複数のログを書き込み、それぞれ正しい日付のファイル名 (キー) で出力されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::write
      * @covers ::<private>
@@ -78,7 +101,7 @@ class DataLogStorageTest extends TestCase
     }
 
     /**
-     * 第 2 引数以降を指定することでログファイル名をカスタマイズします。
+     * 第 2 引数以降を指定することでログのファイル名 (キー) をカスタマイズできることを確認します。
      *
      * @covers ::__construct
      * @covers ::write

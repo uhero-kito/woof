@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class NullLogStorageTest extends TestCase
 {
     /**
+     * getInstance() を複数回呼び出した時に同一のインスタンスが返されることを確認します。
+     *
      * @covers ::getInstance
      */
     public function testGetInstance()
@@ -21,6 +23,8 @@ class NullLogStorageTest extends TestCase
     }
 
     /**
+     * write() メソッドが常に true を返すことを確認します。
+     *
      * @covers ::write
      */
     public function testWrite()
