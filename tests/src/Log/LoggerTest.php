@@ -7,30 +7,48 @@ use TestHelper;
 use Woof\System\FixedClock;
 
 /**
+ * Logger のテストです。
+ *
+ * このテストクラスではテスト時に物理ファイルの入出力が発生するため、
+ * setUp() で一時ディレクトリのクリーニングを行っています。
+ * また、異なる日付におけるファイル名生成の挙動を確認するため、一時的にシステムのタイムゾーンを
+ * "Asia/Tokyo" に変更しています。
+ *
  * @coversDefaultClass Woof\Log\Logger
  */
 class LoggerTest extends TestCase
 {
     /**
+     * テストデータが配置されるベースディレクトリです。
+     *
      * @var string
      */
     const DATA_DIR = TEST_DATA_DIR . "/Log/Logger";
 
     /**
+     * テスト用の LogStorage オブジェクトです。
+     *
      * @var LogStorage
      */
     private $storage;
 
     /**
+     * テスト用の一時ファイルを出力するディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
      * @var string
      */
     private $defaultTimezone;
 
+    /**
+     * テスト用のディレクトリの準備とタイムゾーンの固定を行います。
+     */
     public function setUp(): void
     {
         $datadir = self::DATA_DIR;
@@ -42,12 +60,17 @@ class LoggerTest extends TestCase
         $this->defaultTimezone = ini_set("date.timezone", "Asia/Tokyo");
     }
 
+    /**
+     * 固定したタイムゾーンを元の状態に戻します。
+     */
     public function tearDown(): void
     {
         ini_set("date.timezone", $this->defaultTimezone);
     }
 
     /**
+     * ログ出力を行わない (NOP) Logger が生成され、メソッド呼び出しが安全に無視されることを確認します。
+     *
      * @covers ::getNopLogger
      */
     public function testGetNopLogger(): void
@@ -60,6 +83,8 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * ビルダーで設定されたログレベルが正しく取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::__construct
      * @covers ::getLogLevel
@@ -75,6 +100,8 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * 複数行処理のフラグ (multiple) が正しく設定および取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::__construct
      * @covers ::isMultiple
@@ -97,6 +124,7 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * LogFormat が正しく設定および取得できることと、未設定時はデフォルトの LogFormat オブジェクトが使われることを確認します。
      *
      * @covers ::newInstance
      * @covers ::__construct
@@ -118,6 +146,8 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * LogStorage が正しく設定および取得できることと、未設定時は NullLogStorage が使われることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::__construct
      * @covers ::getStorage
@@ -133,6 +163,8 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * Clock が正しく設定および取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::__construct
      * @covers ::getClock
@@ -149,8 +181,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * @param int $level
-     * @return Logger
+     * 指定されたログレベルを持つテスト用の Logger インスタンスを生成して返します。
+     *
+     * @param int $level 設定するログレベル
+     * @return Logger 生成されたテスト用 Logger インスタンス
      */
     private function getTestObjectByLogLevel(int $level): Logger
     {
@@ -162,7 +196,9 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * @param bool $expected
+     * 期待されるログファイルが生成されているか (または生成されていないか) を検証します。
+     *
+     * @param bool $expected ログファイルが存在するべき場合は true
      */
     private function checkLogCreated(bool $expected): void
     {
@@ -171,10 +207,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * Logger に設定されたログレベルの値に関わらず、常にログの追記が行われます。
+     * Logger に設定されたログレベルの値に関わらず、常にログの追記が行われることを確認します。
      *
-     * @param int $level
-     * @param bool $expected
+     * @param int $level テスト対象のログレベル
+     * @param bool $expected ログが記録されるべきかどうか
      * @dataProvider provideTestError
      * @covers ::error
      * @covers ::<private>
@@ -186,7 +222,9 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testError() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestError(): array
     {
@@ -199,10 +237,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * Logger に設定されたログレベルが DEBUG, INFO, ALERT の場合のみログの追記が行われます。
+     * Logger に設定されたログレベルが DEBUG, INFO, ALERT の場合のみログの追記が行われることを確認します。
      *
-     * @param int $level
-     * @param bool $expected
+     * @param int $level テスト対象のログレベル
+     * @param bool $expected ログが記録されるべきかどうか
      * @dataProvider provideTestAlert
      * @covers ::alert
      * @covers ::<private>
@@ -214,8 +252,9 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * testAlert() のためのテストデータを提供します。
      *
-     * @return array
+     * @return array テストデータの配列
      */
     public function provideTestAlert(): array
     {
@@ -228,10 +267,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * Logger に設定されたログレベルが INFO, DEBUG の場合のみログの追記が行われます。
+     * Logger に設定されたログレベルが INFO, DEBUG の場合のみログの追記が行われることを確認します。
      *
-     * @param int $level
-     * @param bool $expected
+     * @param int $level テスト対象のログレベル
+     * @param bool $expected ログが記録されるべきかどうか
      * @dataProvider provideTestInfo
      * @covers ::info
      * @covers ::<private>
@@ -243,8 +282,9 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * testInfo() のためのテストデータを提供します。
      *
-     * @return array
+     * @return array テストデータの配列
      */
     public function provideTestInfo(): array
     {
@@ -257,10 +297,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * Logger に設定されたログレベルが DEBUG の場合のみログの追記が行われます。
+     * Logger に設定されたログレベルが DEBUG の場合のみログの追記が行われることを確認します。
      *
-     * @param int $level
-     * @param bool $expected
+     * @param int $level テスト対象のログレベル
+     * @param bool $expected ログが記録されるべきかどうか
      * @dataProvider provideTestDebug
      * @covers ::debug
      * @covers ::<private>
@@ -272,8 +312,9 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * testDebug() のためのテストデータを提供します。
      *
-     * @return array
+     * @return array テストデータの配列
      */
     public function provideTestDebug(): array
     {
@@ -286,7 +327,7 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * オブジェクトをログに追記した場合は __toString() の結果が書き込まれます。
+     * オブジェクトをログに追記した場合は __toString() の結果が書き込まれることを確認します。
      *
      * @covers ::log
      * @covers ::<private>
@@ -304,7 +345,7 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * __toString() を実装していないオブジェクトをログに追記した場合は print_r による文字列表現が書き込まれます。
+     * __toString() を実装していないオブジェクトをログに追記した場合は print_r による文字列表現が書き込まれることを確認します。
      *
      * @covers ::log
      * @covers ::<private>
@@ -327,7 +368,7 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * 配列をログに追記した場合は print_r の結果が書き込まれます。
+     * 配列をログに追記した場合は print_r の結果が書き込まれることを確認します。
      *
      * @covers ::log
      * @covers ::<private>
@@ -351,10 +392,10 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * 文字列以外のスカラー値をログに追記した場合は、それぞれの型に応じた文字列表現が書き込まれます。
+     * 文字列以外のスカラー値をログに追記した場合は、それぞれの型に応じた文字列表現が書き込まれることを確認します。
      *
-     * @param mixed $value
-     * @param string $expected
+     * @param mixed $value ログに記録するスカラー値
+     * @param string $expected 期待される文字列表現
      * @dataProvider provideTestLogWithScalar
      * @covers ::log
      * @covers ::<private>
@@ -371,7 +412,9 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testLogWithScalar() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestLogWithScalar(): array
     {
@@ -385,9 +428,10 @@ class LoggerTest extends TestCase
     }
 
     /**
+     * 複数行のメッセージを記録した際の、isMultiple フラグに応じた挙動の違いを確認します。
      *
-     * @param bool $multiple
-     * @param array $expected
+     * @param bool $multiple 複数行を一度に処理するかどうかのフラグ
+     * @param array $expected 期待される出力行の配列
      * @dataProvider provideTestLogByMultiple
      * @covers ::log
      * @covers ::<private>
@@ -415,7 +459,9 @@ class LoggerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testLogByMultiple() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestLogByMultiple(): array
     {
@@ -439,7 +485,6 @@ class LoggerTest extends TestCase
 class LoggerTest_Sample1
 {
     /**
-     *
      * @return string
      */
     public function __toString(): string
@@ -450,5 +495,4 @@ class LoggerTest_Sample1
 
 class LoggerTest_Sample2
 {
-
 }

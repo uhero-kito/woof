@@ -13,6 +13,8 @@ use Woof\System\FixedClock;
 class LoggerBuilderTest extends TestCase
 {
     /**
+     * ログレベルの setter と getter およびメソッドチェーンが正しく機能することを確認します。
+     *
      * @covers ::getLogLevel
      * @covers ::setLogLevel
      */
@@ -24,6 +26,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * 不正なログレベルを指定した場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::setLogLevel
      */
     public function testSetLogLevelFail()
@@ -34,6 +38,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * 複数行処理フラグの setter と getter、およびメソッドチェーンが正しく機能することを確認します。
+     *
      * @covers ::getMultiple
      * @covers ::setMultiple
      */
@@ -45,6 +51,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * LogFormat の setter と getter およびメソッドチェーンが正しく機能することを確認します。
+     *
      * @covers ::getFormat
      * @covers ::setFormat
      */
@@ -58,6 +66,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * LogStorage の setter と getter およびメソッドチェーンが正しく機能することを確認します。
+     *
      * @covers ::getStorage
      * @covers ::hasStorage
      * @covers ::setStorage
@@ -75,6 +85,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * Clock の setter と getter およびメソッドチェーンが正しく機能することを確認します。
+     *
      * @covers ::getClock
      * @covers ::setClock
      */
@@ -88,6 +100,8 @@ class LoggerBuilderTest extends TestCase
     }
 
     /**
+     * build() メソッドによって Logger インスタンスが正しく生成されることを確認します。
+     *
      * @covers ::build
      */
     public function testBuild()
