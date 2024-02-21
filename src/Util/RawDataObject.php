@@ -3,7 +3,10 @@
 namespace Woof\Util;
 
 /**
- * 何も変換を行わない、シンプルな DataObject の実装です。
+ * 配列やスカラー値などのプリミティブなデータを DataObject として扱うためのラッパークラスです。
+ *
+ * DataObject インタフェースを要求するコンポーネント (JsonBody など) において、
+ * エンドユーザーが指定した配列や文字列などをそのまま DataObject として内部で取り扱うために使用します。
  */
 class RawDataObject implements DataObject
 {
@@ -13,7 +16,9 @@ class RawDataObject implements DataObject
     private $value;
 
     /**
-     * @param mixed $value
+     * ラップする値を指定してオブジェクトを生成します。
+     *
+     * @param mixed $value DataObject として扱う値 (通常は配列やスカラー値)
      */
     public function __construct($value)
     {
@@ -21,7 +26,9 @@ class RawDataObject implements DataObject
     }
 
     /**
-     * @return mixed
+     * コンストラクタで指定されたラップ済みの値をそのまま返します。
+     *
+     * @return mixed 保持している値
      */
     public function toValue()
     {
