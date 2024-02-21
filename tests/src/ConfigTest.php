@@ -12,7 +12,9 @@ use Woof\Util\FileProperties;
 class ConfigTest extends TestCase
 {
     /**
-     * @return Config
+     * テスト用の Config インスタンスを生成して返します。
+     *
+     * @return Config テスト用のインスタンス
      */
     public function createTestObject(): Config
     {
@@ -21,8 +23,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param int $expected
+     * 指定したキーの設定値が正しく整数 (int) として取得できることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param int $expected 期待される整数値
      * @covers ::__construct
      * @covers ::getInt
      * @dataProvider provideTestGetInt
@@ -34,7 +38,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetInt() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetInt(): array
     {
@@ -52,8 +58,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param float $expected
+     * 指定したキーの設定値が正しく浮動小数点数 (float) として取得できることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param float $expected 期待される浮動小数点数値
      * @covers ::__construct
      * @covers ::getFloat
      * @dataProvider provideTestGetFloat
@@ -65,7 +73,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetFloat() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetFloat(): array
     {
@@ -83,8 +93,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param int $expected
+     * 指定したキーの設定値を整数 (int) として取得する際、最小値・最大値の制限が正しく適用されることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param int $expected 制限が適用された期待値
      * @covers ::__construct
      * @covers ::getInt
      * @covers ::<private>
@@ -97,7 +109,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetIntByMinMax() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetIntByMinMax(): array
     {
@@ -113,8 +127,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param float $expected
+     * 指定したキーの設定値を浮動小数点数 (float) として取得する際、最小値・最大値の制限が正しく適用されることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param float $expected 制限が適用された期待値
      * @covers ::__construct
      * @covers ::getFloat
      * @covers ::<private>
@@ -127,7 +143,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetFloatByMinMax() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetFloatByMinMax(): array
     {
@@ -143,8 +161,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param string $expected
+     * 指定したキーの設定値が正しく文字列 (string) として取得できることと、変換可能な値が文字列表現になることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param string $expected 期待される文字列
      * @covers ::__construct
      * @covers ::getString
      * @covers ::<private>
@@ -157,7 +177,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetString() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetString(): array
     {
@@ -175,8 +197,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param array $expected
+     * 指定したキーの設定値が正しく配列 (array) として取得できることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param array $expected 期待される配列
      * @covers ::__construct
      * @covers ::getArray
      * @dataProvider provideTestGetArray
@@ -188,8 +212,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param array $expected
+     * 指定したキー以下の設定値が、新しい Config オブジェクトとして正しく切り出せることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param array $expected 切り出された設定として期待される配列 (内部比較用)
      * @covers ::__construct
      * @covers ::getSubConfig
      * @dataProvider provideTestGetArray
@@ -202,7 +228,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetArray() および testGetSubConfig() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetArray(): array
     {
@@ -218,6 +246,8 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * 存在しないキーを指定した場合に、それぞれの取得メソッドが正しく代替値 (デフォルト値) を返すことを確認します。
+     *
      * @covers ::__construct
      * @covers ::getInt
      * @covers ::getString
@@ -237,8 +267,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param bool $expected
+     * 指定したキーの設定値が、様々な文字列表現を含めて正しく論理値 (bool) として取得できることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param bool $expected 期待される論理値
      * @covers ::__construct
      * @covers ::getBool
      * @covers ::<private>
@@ -251,7 +283,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetBool() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetBool(): array
     {
@@ -269,8 +303,10 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param bool $expected
+     * 指定したキーが存在するかどうかを正しく判定できることを確認します。
+     *
+     * @param string $name テストする設定キー名
+     * @param bool $expected 存在するかどうかの期待値
      * @covers ::__construct
      * @covers ::contains
      * @dataProvider provideTestContains
@@ -282,7 +318,9 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array
+     * testContains() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestContains(): array
     {
