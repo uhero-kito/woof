@@ -11,11 +11,15 @@ use Woof\FileResources;
 class FileResourcesTest extends TestCase
 {
     /**
+     * テストデータが配置されているディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/FileResources/subjects";
 
     /**
+     * 指定したキーに該当するファイルの内容が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      */
@@ -28,6 +32,8 @@ class FileResourcesTest extends TestCase
     }
 
     /**
+     * 存在しないファイルを指定した場合に ResourceNotFoundException がスローされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      */
@@ -39,6 +45,8 @@ class FileResourcesTest extends TestCase
     }
 
     /**
+     * 指定したファイルが存在するかどうかを正しく判定できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::contains
      */
@@ -50,6 +58,8 @@ class FileResourcesTest extends TestCase
     }
 
     /**
+     * 指定された相対パスが正しい絶対パスに変換されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::formatPath
      */
