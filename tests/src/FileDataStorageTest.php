@@ -6,15 +6,25 @@ use PHPUnit\Framework\TestCase;
 use TestHelper;
 
 /**
+ * FileDataStorage のテストです。
+ *
+ * このテストクラスでは物理ファイルの入出力が発生するため、
+ * setUp() でテスト用の一時ディレクトリのクリーニングとテストデータのコピーを行っています。
+ *
  * @coversDefaultClass Woof\FileDataStorage
  */
 class FileDataStorageTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
+    /**
+     * テスト用の一時ディレクトリの準備とテストデータのコピーを行います。
+     */
     protected function setUp(): void
     {
         $datadir = TEST_DATA_DIR . "/FileDataStorage";
@@ -26,6 +36,8 @@ class FileDataStorageTest extends TestCase
     }
 
     /**
+     * 指定したパスのファイル内容が取得できることと、存在しない場合は代替値が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      */
@@ -40,6 +52,8 @@ class FileDataStorageTest extends TestCase
     }
 
     /**
+     * 指定したファイルが存在するかどうかを正しく判定できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::contains
      */
@@ -51,6 +65,8 @@ class FileDataStorageTest extends TestCase
     }
 
     /**
+     * 指定したパスにファイルが新規作成され、内容が書き込まれることを確認します。
+     *
      * @covers ::__construct
      * @covers ::put
      * @covers ::<private>
@@ -60,13 +76,15 @@ class FileDataStorageTest extends TestCase
         $tmpdir   = $this->tmpdir;
         $testfile = "{$tmpdir}/test02/newfile.txt";
         $obj      = new FileDataStorage($tmpdir);
-        $this->assertFileNotExists($testfile);
+        $this->assertFileDoesNotExist($testfile);
         $obj->put("test02/newfile.txt", "This is test");
         $this->assertFileExists($testfile);
         $this->assertSame("This is test", file_get_contents($testfile));
     }
 
     /**
+     * 既存のファイルに内容が正しく追記されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::append
      */
@@ -83,6 +101,8 @@ class FileDataStorageTest extends TestCase
     }
 
     /**
+     * 指定された相対パスが正しい絶対パスに変換されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::formatPath
      */
