@@ -14,10 +14,15 @@ use Woof\Util\ArrayProperties;
 class StandardLoggerFactoryTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
+    /**
+     * テスト用の一時ディレクトリのパスを設定します。
+     */
     public function setUp(): void
     {
         $basedir      = TEST_DATA_DIR . "/StandardLoggerFactory";
@@ -25,8 +30,10 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
-     * @param array $prop
-     * @return Logger
+     * テスト用の Logger インスタンスを生成して返します。
+     *
+     * @param array $prop Config に設定する配列データ
+     * @return Logger 生成されたテスト用 Logger インスタンス
      */
     private function createLoggerByArray(array $prop): Logger
     {
@@ -37,8 +44,10 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
-     * @param string $level
-     * @param int $expected
+     * 文字列によるログレベルの指定が、対応する定数に正しく変換されることを確認します。
+     *
+     * @param string $level 設定等から渡されるログレベル文字列
+     * @param int $expected 期待されるログレベル定数
      * @covers ::create
      * @covers ::detectLogLevel
      * @dataProvider provideTestDetectLogLevel
@@ -55,7 +64,9 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
-     * @return array
+     * testDetectLogLevel() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestDetectLogLevel(): array
     {
@@ -70,6 +81,8 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
+     * DataStorage が未指定の場合に、ログ出力を行わない (NOP) Logger が返されることを確認します。
+     *
      * @covers ::create
      */
     public function testCreateWithoutDataStorage(): void
@@ -81,6 +94,8 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
+     * Config に "logger" セクションが存在しない場合に、ログ出力を行わない (NOP) Logger が返されることを確認します。
+     *
      * @covers ::create
      */
     public function testCreateWithoutConfig(): void
@@ -90,6 +105,8 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
+     * Config に "logger" セクションが存在するが値が空の場合、デフォルト値で Logger が生成されることを確認します。
+     *
      * @covers ::create
      */
     public function testCreateByDefault(): void
@@ -104,6 +121,8 @@ class StandardLoggerFactoryTest extends TestCase
     }
 
     /**
+     * Config の "logger" セクションに設定された値が、正しく Logger に反映されることを確認します。
+     *
      * @covers ::create
      */
     public function testCreate(): void
