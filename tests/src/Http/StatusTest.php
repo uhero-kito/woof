@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class StatusTest extends TestCase
 {
     /**
+     * ステータスラインが正しくフォーマットされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::format
      */
@@ -20,6 +22,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 200 OK の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::getOK
      */
     public function testGetOK()
@@ -29,6 +33,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 301 Moved Permanently の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get301
      */
     public function testGet301()
@@ -38,6 +44,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 302 Found の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get302
      */
     public function testGet302()
@@ -47,6 +55,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 304 Not Modified の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get304
      */
     public function testGet304()
@@ -56,6 +66,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 400 Bad Request の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get400
      */
     public function testGet400()
@@ -65,6 +77,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 401 Unauthorized の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get401
      */
     public function testGet401()
@@ -74,6 +88,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 403 Forbidden の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get403
      */
     public function testGet403()
@@ -83,6 +99,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 404 File Not Found の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get404
      */
     public function testGet404()
@@ -92,6 +110,8 @@ class StatusTest extends TestCase
     }
 
     /**
+     * 500 Internal Server Error の Status オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::get500
      */
     public function testGet500()
