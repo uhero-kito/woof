@@ -12,6 +12,8 @@ use InvalidArgumentException;
 class HttpDateFormat
 {
     /**
+     * 曜日の短縮名のリスト (RFC 822, ANSI C 形式用) です。
+     *
      * @var array
      */
     const SHORT_DAYS = [
@@ -25,6 +27,8 @@ class HttpDateFormat
     ];
 
     /**
+     * 曜日の完全な名前のリスト (RFC 850 形式用) です。
+     *
      * @var array
      */
     const LONG_DAYS = [
@@ -38,6 +42,8 @@ class HttpDateFormat
     ];
 
     /**
+     * 月の短縮名のリストです。
+     *
      * @var array
      */
     const MONTHS = [
@@ -56,12 +62,16 @@ class HttpDateFormat
     ];
 
     /**
+     * 年の計算基準となる Clock オブジェクトです。
+     *
      * @var Clock
      */
     private $clock;
 
     /**
-     * @param Clock $clock
+     * 基準となる Clock オブジェクトを指定してインスタンスを生成します。
+     *
+     * @param Clock|null $clock 未指定の場合は DefaultClock が使用されます
      */
     public function __construct(Clock $clock = null)
     {
@@ -69,11 +79,12 @@ class HttpDateFormat
     }
 
     /**
-     * 指定された HTTP-date 形式の文字列をシステム時刻に変換します。
+     * 指定された HTTP-date 形式の文字列を Unix time (整数) に変換します。
+     * RFC 822, RFC 850, ANSI C の 3 つのフォーマットに対応しています。
      *
-     * @param string $format
-     * @return int
-     * @throws InvalidArgumentException
+     * @param string $format 解析する HTTP-date 形式の文字列
+     * @return int 変換された Unix time
+     * @throws InvalidArgumentException サポートされていないフォーマットの文字列が指定された場合
      */
     public function parse(string $format): int
     {
@@ -90,8 +101,10 @@ class HttpDateFormat
     }
 
     /**
-     * @param string $format
-     * @return int
+     * RFC 822 形式の文字列を Unix time に変換します。
+     *
+     * @param string $format 解析する文字列
+     * @return int 解析に成功した場合は Unix time、失敗した場合は -1
      */
     private function parseRfc822(string $format): int
     {
@@ -112,8 +125,10 @@ class HttpDateFormat
     }
 
     /**
-     * @param string $format
-     * @return int
+     * RFC 850 形式の文字列を Unix time に変換します。
+     *
+     * @param string $format 解析する文字列
+     * @return int 解析に成功した場合は Unix time、失敗した場合は -1
      */
     private function parseRfc850(string $format): int
     {
@@ -135,8 +150,10 @@ class HttpDateFormat
     }
 
     /**
-     * @param string $format
-     * @return int
+     * ANSI C (asctime) 形式の文字列を Unix time に変換します。
+     *
+     * @param string $format 解析する文字列
+     * @return int 解析に成功した場合は Unix time、失敗した場合は -1
      */
     private function parseAnsi(string $format): int
     {
@@ -157,8 +174,10 @@ class HttpDateFormat
     }
 
     /**
-     * @param int $y
-     * @return int
+     * 2 桁で表現された年を、現在の基準時刻をもとに 4 桁の年に変換します。
+     *
+     * @param int $y 2 桁の年
+     * @return int 4 桁に補正された年
      */
     private function calculateFullYear(int $y): int
     {
@@ -170,8 +189,10 @@ class HttpDateFormat
     }
 
     /**
-     * @param int $time
-     * @return string
+     * 指定された Unix time を RFC 822 に準拠した HTTP-date 形式の文字列 (GMT) に変換します。
+     *
+     * @param int $time 変換元の Unix time
+     * @return string フォーマットされた HTTP-date 文字列
      */
     public function format(int $time): string
     {

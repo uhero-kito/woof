@@ -3,21 +3,29 @@
 namespace Woof\Http;
 
 /**
- * HTTP-date 形式の値を持つヘッダーフィールドです。
+ * HTTP-date 形式 (RFC 822 準拠の時刻文字列) の値を持つヘッダーフィールドです。
+ *
+ * Last-Modified や Expires などのヘッダーを取り扱うために使用します。
  */
 class HttpDate implements HeaderField
 {
     /**
+     * 文字列のパースおよびフォーマットを行うためのオブジェクトです。
+     *
      * @var HttpDateFormat
      */
     private $format;
 
     /**
+     * ヘッダー名をあらわします。
+     *
      * @var string
      */
     private $name;
 
     /**
+     * ヘッダーの値となる Unix time を保持します。
+     *
      * @var int
      */
     private $time;
@@ -28,7 +36,7 @@ class HttpDate implements HeaderField
      *
      * @param string $name ヘッダー名
      * @param int $time このシステムのタイムゾーンを基準とした Unix time
-     * @param HttpDateFormat $format
+     * @param HttpDateFormat|null $format 任意の HttpDateFormat (通常は未指定で構いません)
      */
     public function __construct(string $name, int $time, HttpDateFormat $format = null)
     {
@@ -38,7 +46,9 @@ class HttpDate implements HeaderField
     }
 
     /**
-     * @return string
+     * 保持している Unix time を HTTP-date 形式 (GMT) の文字列として返します。
+     *
+     * @return string フォーマットされた HTTP-date 文字列
      */
     public function format(): string
     {
@@ -46,7 +56,9 @@ class HttpDate implements HeaderField
     }
 
     /**
-     * @return string
+     * 設定されたヘッダー名を返します。
+     *
+     * @return string ヘッダー名
      */
     public function getName(): string
     {
@@ -54,7 +66,9 @@ class HttpDate implements HeaderField
     }
 
     /**
-     * @return int
+     * 設定された Unix time をそのまま返します。
+     *
+     * @return int ヘッダー値 (Unix time)
      */
     public function getValue()
     {

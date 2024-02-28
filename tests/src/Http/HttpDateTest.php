@@ -6,22 +6,32 @@ use PHPUnit\Framework\TestCase;
 use Woof\System\FixedClock;
 
 /**
+ * HttpDate のテストです。
+ *
+ * このテストクラスでは時刻の書式化の正確性を担保するため、
+ * setUp() および tearDown() で一時的にシステムのデフォルトタイムゾーンを変更しています。
+ *
  * @coversDefaultClass Woof\Http\HttpDate
  */
 class HttpDateTest extends TestCase
 {
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
      * @var string
      */
     private $defaultTimezone;
 
     /**
+     * テスト用の HttpDateFormat です。
+     *
      * @var HttpDateFormat
      */
     private $format;
 
     /**
-     * このテストではタイムゾーンを Asia/Tokyo に固定します。
+     * テストの実行環境に依存しないよう、システムのタイムゾーンを一時的に Asia/Tokyo に固定し、
+     * テスト用の HttpDateFormat を準備します。
      */
     public function setUp(): void
     {
@@ -38,6 +48,8 @@ class HttpDateTest extends TestCase
     }
 
     /**
+     * 保持している時刻が正しく HTTP-date 文字列としてフォーマットされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::format
      */
@@ -48,6 +60,8 @@ class HttpDateTest extends TestCase
     }
 
     /**
+     * 設定したヘッダー名が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getName
      */
@@ -58,6 +72,8 @@ class HttpDateTest extends TestCase
     }
 
     /**
+     * 設定した値 (Unix time) が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getValue
      */
