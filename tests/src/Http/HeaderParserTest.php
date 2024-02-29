@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class HeaderParserTest extends TestCase
 {
     /**
+     * 引数を省略して生成したインスタンスが、デフォルト値を用いたインスタンスと等価であることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getDefaultQualityValuesNames
      * @covers ::getDefaultHttpDateNames
@@ -34,10 +36,11 @@ class HeaderParserTest extends TestCase
     }
 
     /**
+     * ヘッダー名と値の組み合わせから、適切な HeaderField オブジェクトが生成されることを確認します。
      *
-     * @param string $name
-     * @param string $value
-     * @param HeaderField $expected
+     * @param string $name ヘッダー名
+     * @param string $value ヘッダーの値
+     * @param HeaderField $expected 期待される HeaderField オブジェクト
      * @covers ::__construct
      * @covers ::parse
      * @covers ::<private>
@@ -50,7 +53,9 @@ class HeaderParserTest extends TestCase
     }
 
     /**
-     * @return array
+     * testParse() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestParse(): array
     {

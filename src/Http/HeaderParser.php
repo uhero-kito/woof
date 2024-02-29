@@ -2,31 +2,38 @@
 
 namespace Woof\Http;
 
+/**
+ * HTTP ヘッダーの生の文字列を解析し、適切な HeaderField オブジェクトに変換するクラスです。
+ */
 class HeaderParser
 {
     /**
-     * 値が quality values となるヘッダー名の一覧です。
+     * 値が Quality Values 形式 (q-value) となるヘッダー名 (小文字) の一覧です。
      *
      * @var array
      */
     private $qNames;
 
     /**
-     * 値が HTTP-date となるヘッダー名の一覧です。
+     * 値が HTTP-date 形式となるヘッダー名 (小文字) の一覧です。
      *
      * @var array
      */
     private $dNames;
 
     /**
+     * HTTP-date 形式の文字列を解析するための HttpDateFormat です。
+     *
      * @var HttpDateFormat
      */
     private $format;
 
     /**
-     * @param string[] $qNames
-     * @param string[] $dNames
-     * @param HttpDateFormat $format
+     * パースの対象とするヘッダー名のリストと、日付解析用のフォーマッタを指定してインスタンスを生成します。
+     *
+     * @param string[] $qNames Quality Values として扱うヘッダー名の配列 (未指定時はデフォルト値が使用されます)
+     * @param string[] $dNames HTTP-date として扱うヘッダー名の配列 (未指定時はデフォルト値が使用されます)
+     * @param HttpDateFormat|null $format 日付解析用のフォーマッタ
      */
     public function __construct(array $qNames = [], array $dNames = [], HttpDateFormat $format = null)
     {
@@ -39,7 +46,9 @@ class HeaderParser
     }
 
     /**
-     * @return array
+     * Quality Values 形式として扱うヘッダー名のデフォルトリストを取得します。
+     *
+     * @return array デフォルトのヘッダー名配列
      */
     public static function getDefaultQualityValuesNames(): array
     {
@@ -52,7 +61,9 @@ class HeaderParser
     }
 
     /**
-     * @return array
+     * HTTP-date 形式として扱うヘッダー名のデフォルトリストを取得します。
+     *
+     * @return array デフォルトのヘッダー名配列
      */
     public static function getDefaultHttpDateNames(): array
     {
@@ -64,9 +75,11 @@ class HeaderParser
     }
 
     /**
-     * @param string $name
-     * @param string $value
-     * @return HeaderField
+     * ヘッダー名と値を解析し、適切な HeaderField インスタンス (QualityValues, HttpDate, TextField のいずれか) を返します。
+     *
+     * @param string $name ヘッダー名
+     * @param string $value ヘッダーの生の値
+     * @return HeaderField 解析結果の HeaderField オブジェクト
      */
     public function parse(string $name, string $value): HeaderField
     {
@@ -85,10 +98,10 @@ class HeaderParser
     }
 
     /**
-     * qualitiy values を配列に変換します.
+     * Quality Values 形式の生文字列を解析し、項目名をキー, q-value を値とする連想配列に変換します。
      *
-     * @param  string $str
-     * @return array
+     * @param  string $str Quality Values の生文字列
+     * @return array 変換された連想配列
      */
     private function parseQualityValues(string $str)
     {
@@ -109,10 +122,10 @@ class HeaderParser
     }
 
     /**
-     * qvalue 形式の文字列 ("q=0.9" など) に含まれる小数部分を float に変換します。
+     * q-value 形式の文字列 ("q=0.9" など) に含まれる小数部分を float に変換します。
      *
      * @param string $qvalue "q=0.9" のような形式の文字列
-     * @return float 変換後の qvalue の値。もしも変換に失敗した場合は 1.0
+     * @return float 変換後の q-value の値。もしも変換に失敗した場合は 1.0
      */
     private function parseQvalue(string $qvalue): float
     {
