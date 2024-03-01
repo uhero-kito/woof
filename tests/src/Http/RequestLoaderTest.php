@@ -12,6 +12,8 @@ use Woof\System\VariablesBuilder;
 class RequestLoaderTest extends TestCase
 {
     /**
+     * 設定された Logger が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getLogger
      */
@@ -23,6 +25,8 @@ class RequestLoaderTest extends TestCase
     }
 
     /**
+     * 設定された HeaderParser が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getHeaderParser
      */
@@ -34,6 +38,9 @@ class RequestLoaderTest extends TestCase
     }
 
     /**
+     * Variables オブジェクトからサーバー環境や各種パラメータが正しく読み取られ、
+     * 完全な Request オブジェクトが構築されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::load
      * @covers ::<private>

@@ -4,54 +4,80 @@ namespace Woof\Http;
 
 use LogicException;
 
+/**
+ * HTTP リクエストの情報を保持するデータクラスです。
+ *
+ * URL, HTTP メソッド, ヘッダー, クエリパラメータ, POST データ, アップロードファイルなどの
+ * クライアントから送信されたリクエスト全体の状態をカプセル化します。
+ */
 class Request
 {
     /**
+     * アクセスされたホスト名 (例: "example.com") です。
+     *
      * @var string
      */
     private $host;
 
     /**
+     * アクセスされた URI (クエリ文字列を含む) です。
+     *
      * @var string
      */
     private $uri;
 
     /**
+     * アクセスされた URI のうち、クエリ文字列を除外したパス部分です。
+     *
      * @var string
      */
     private $path;
 
     /**
+     * アクセスされたスキーム ("http", "https" など) です。
+     *
      * @var string
      */
     private $scheme;
 
     /**
+     * HTTP リクエストメソッド ("get", "post" など) を小文字で保持します。
+     *
      * @var string
      */
     private $method;
 
     /**
+     * ヘッダー名 (小文字) をキー, HeaderField オブジェクトを値とする連想配列です。
+     *
      * @var HeaderField[]
      */
     private $headerList;
 
     /**
+     * GET パラメータ (クエリ文字列) の連想配列です。
+     *
      * @var array
      */
     private $queryList;
 
     /**
+     * POST パラメータの連想配列です。
+     *
      * @var array
      */
     private $postList;
 
     /**
+     * クッキー情報の連想配列です。
+     *
      * @var array
      */
     private $cookieList;
 
     /**
+     * 添付ファイル名 (パラメータ名) をキー, UploadFile オブジェクトを値とする連想配列です。
+     *
      * @var array
      */
     private $fileList;
@@ -69,11 +95,12 @@ class Request
     }
 
     /**
+     * RequestBuilder の状態を元に、新しい Request インスタンスを生成します。
      * このメソッドは RequestBuilder::build() から参照されます。
      *
-     * @param RequestBuilder $builder
-     * @return Request
-     * @throws LogicException
+     * @param RequestBuilder $builder 構築済みのビルダーオブジェクト
+     * @return Request 生成されたリクエストオブジェクト
+     * @throws LogicException ホスト名 (host) が指定されていない場合
      * @ignore
      */
     public static function newInstance(RequestBuilder $builder): self
@@ -99,7 +126,9 @@ class Request
     }
 
     /**
-     * @return string
+     * ホスト名を取得します。
+     *
+     * @return string ホスト名
      */
     public function getHost(): string
     {
@@ -109,7 +138,7 @@ class Request
     /**
      * アクセスされた URL そのものを返します。返り値はクエリ以降の文字列を含みます。
      *
-     * @return string
+     * @return string クエリ文字列を含む URI
      */
     public function getUri(): string
     {
@@ -117,9 +146,9 @@ class Request
     }
 
     /**
-     * アクセスされた URL のクエリを含まない部分を返します。
+     * アクセスされた URL のクエリを含まないパス部分を返します。
      *
-     * @return string
+     * @return string パス文字列
      */
     public function getPath(): string
     {
@@ -127,7 +156,9 @@ class Request
     }
 
     /**
-     * @return string
+     * アクセスされたスキーム (通常は "http" または "https") を取得します。
+     *
+     * @return string スキーム名
      */
     public function getScheme(): string
     {
@@ -135,7 +166,9 @@ class Request
     }
 
     /**
-     * @return string
+     * HTTP リクエストメソッドを取得します。返り値は常に小文字となります。
+     *
+     * @return string HTTP メソッド ("get", "post", "put" など)
      */
     public function getMethod(): string
     {
@@ -160,8 +193,8 @@ class Request
      * もしも指定されたヘッダーが存在しない場合は EmptyField を返します。
      * ヘッダー名の大文字・小文字は区別されません。
      *
-     * @param string $name
-     * @return HeaderField
+     * @param string $name 取得したいヘッダー名
+     * @return HeaderField HeadField オブジェクト
      */
     public function getHeader(string $name): HeaderField
     {
@@ -170,7 +203,9 @@ class Request
     }
 
     /**
-     * @return HeaderField[]
+     * 設定されているすべてのヘッダーフィールドを配列で取得します。
+     *
+     * @return HeaderField[] HeaderField の配列 (インデックス配列)
      */
     public function getHeaderList(): array
     {
@@ -178,9 +213,13 @@ class Request
     }
 
     /**
-     * @param string $name
-     * @param string|array $defaultValue
-     * @return string|array
+     * 指定された GET パラメータ (クエリ) の値を取得します。
+     *
+     * 存在しない場合は第 2 引数に指定された代替値を返します。
+     *
+     * @param string $name パラメータ名
+     * @param string|array|null $defaultValue 存在しない場合の代替値
+     * @return string|array 指定されたパラメータの値または代替値
      */
     public function getQuery(string $name, $defaultValue = null)
     {
@@ -188,7 +227,9 @@ class Request
     }
 
     /**
-     * @return array
+     * すべての GET パラメータを取得します。
+     *
+     * @return array GET パラメータの連想配列
      */
     public function getQueryList(): array
     {
@@ -196,9 +237,13 @@ class Request
     }
 
     /**
-     * @param string $name
-     * @param string|array $defaultValue
-     * @return string|array
+     * 指定された POST パラメータの値を取得します。
+     *
+     * 存在しない場合は第 2 引数に指定された代替値を返します。
+     *
+     * @param string $name パラメータ名
+     * @param string|array|null $defaultValue 存在しない場合の代替値
+     * @return string|array 指定されたパラメータの値または代替値
      */
     public function getPost(string $name, $defaultValue = null)
     {
@@ -206,7 +251,9 @@ class Request
     }
 
     /**
-     * @return array
+     * すべての POST パラメータを取得します。
+     *
+     * @return array POST パラメータの連想配列
      */
     public function getPostList(): array
     {
@@ -214,9 +261,11 @@ class Request
     }
 
     /**
-     * @param string $name
-     * @param string $defaultValue
-     * @return string
+     * 指定された名前の Cookie の値を取得します。
+     *
+     * @param string $name Cookie 名
+     * @param string|null $defaultValue 存在しない場合の代替値
+     * @return string|null Cookie の値、または代替値
      */
     public function getCookie(string $name, string $defaultValue = null)
     {
@@ -224,7 +273,9 @@ class Request
     }
 
     /**
-     * @return array
+     * すべての Cookie を取得します。
+     *
+     * @return array Cookie の連想配列
      */
     public function getCookieList(): array
     {
@@ -234,8 +285,8 @@ class Request
     /**
      * 指定されたパラメータ名の添付ファイルが存在するかどうか調べます。
      *
-     * @param string $name
-     * @return bool
+     * @param string $name パラメータ名 (フォームの input 要素の name 属性)
+     * @return bool 存在する場合に true
      */
     public function hasUploadFile(string $name): bool
     {
@@ -245,8 +296,8 @@ class Request
     /**
      * 指定されたパラメータ名の添付ファイルを取得します。
      *
-     * @param string $name
-     * @return UploadFile
+     * @param string $name パラメータ名
+     * @return UploadFile 添付ファイルをあらわす UploadFile オブジェクト
      * @throws UploadFileNotFoundException 添付ファイルが存在しない場合
      */
     public function getUploadFile($name): UploadFile
@@ -259,7 +310,9 @@ class Request
     }
 
     /**
-     * @return UploadFile[]
+     * すべての添付ファイルを取得します。
+     *
+     * @return UploadFile[] パラメータ名をキーとした UploadFile の連想配列
      */
     public function getUploadFileList(): array
     {

@@ -11,7 +11,9 @@ use PHPUnit\Framework\TestCase;
 class RequestTest extends TestCase
 {
     /**
-     * @return RequestBuilder
+     * テスト用の RequestBuilder を生成して返します。
+     *
+     * @return RequestBuilder テスト用の RequestBuilder インスタンス
      */
     private function createTestBuilder(): RequestBuilder
     {
@@ -21,6 +23,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * ホスト名が設定されていない状態でインスタンスを生成した場合に LogicException がスローされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      */
@@ -32,6 +36,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたホスト名が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHost
@@ -45,6 +51,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定された URI が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getUri
@@ -60,6 +68,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたパス (クエリを含まない URI) が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getPath
@@ -75,6 +85,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたスキームが正しく取得・小文字化されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getScheme
@@ -90,6 +102,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定された HTTP メソッドが正しく取得・小文字化されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getMethod
@@ -105,6 +119,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * ヘッダーの存在確認が、大文字・小文字を区別せずに行えることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::hasHeader
@@ -121,6 +137,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定したヘッダーが正しく取得できること、存在しない場合は EmptyField が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHeader
@@ -137,6 +155,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたすべてのヘッダーが配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHeaderList
@@ -154,6 +174,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定した GET パラメータが正しく取得できること、存在しない場合は null が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getQuery
@@ -168,6 +190,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたすべての GET パラメータが配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getQueryList
@@ -185,6 +209,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定した POST パラメータが正しく取得できることと、存在しない場合は null が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getPost
@@ -199,6 +225,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたすべての POST パラメータが配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getPostList
@@ -216,6 +244,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定した Cookie が正しく取得できることと、存在しない場合は null が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getCookie
@@ -230,6 +260,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたすべての Cookie が配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getCookieList
@@ -247,6 +279,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定したパラメータ名の添付ファイル (UploadFile) が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getUploadFile
@@ -261,6 +295,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 指定したパラメータ名の添付ファイルが存在するかどうかが正しく判定できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::hasUploadFile
@@ -276,6 +312,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 存在しない添付ファイルを取得しようとした際に UploadFileNotFoundException がスローされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getUploadFile
@@ -290,6 +328,8 @@ class RequestTest extends TestCase
     }
 
     /**
+     * 設定されたすべての添付ファイルが配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getUploadFileList
