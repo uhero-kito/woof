@@ -11,12 +11,16 @@ use Woof\System\FileSystemException;
 class FileBodyTest extends TestCase
 {
     /**
+     * テストデータが配置されるディレクトリのパスです。
+     *
      * @var string
      */
     const DATA_DIR = TEST_DATA_DIR . "/Http/Response/FileBody";
 
     /**
-     * @return FileBody
+     * テスト用の FileBody インスタンスを生成して返します。
+     *
+     * @return FileBody テスト用のインスタンス
      */
     private function getTestObject(): FileBody
     {
@@ -24,6 +28,8 @@ class FileBodyTest extends TestCase
     }
 
     /**
+     * 存在しないファイルを指定してインスタンスを生成しようとした際に FileSystemException がスローされることを確認します。
+     *
      * @covers ::__construct
      */
     public function testConstructFailByFileNotFound(): void
@@ -33,6 +39,8 @@ class FileBodyTest extends TestCase
     }
 
     /**
+     * 対象ファイルの内容が文字列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getOutput
      */
@@ -44,6 +52,8 @@ class FileBodyTest extends TestCase
     }
 
     /**
+     * 対象ファイルの内容が正しく出力され、true が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::sendOutput
      */
@@ -56,6 +66,8 @@ class FileBodyTest extends TestCase
     }
 
     /**
+     * 指定した Content-Type が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentType
      */
@@ -66,6 +78,8 @@ class FileBodyTest extends TestCase
     }
 
     /**
+     * 対象ファイルのサイズが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentLength
      */

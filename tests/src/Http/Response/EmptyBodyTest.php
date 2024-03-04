@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class EmptyBodyTest extends TestCase
 {
     /**
+     * コンテンツ長として 0 が返されることを確認します。
+     *
      * @covers ::getContentLength
      */
     public function testGetContentLength(): void
@@ -19,6 +21,8 @@ class EmptyBodyTest extends TestCase
     }
 
     /**
+     * Content-Type として空文字列が返されることを確認します。
+     *
      * @covers ::getContentType
      */
     public function testGetContentType(): void
@@ -28,6 +32,8 @@ class EmptyBodyTest extends TestCase
     }
 
     /**
+     * 出力内容として空文字列が返されることを確認します。
+     *
      * @covers ::getOutput
      */
     public function testGetOutput(): void
@@ -37,6 +43,8 @@ class EmptyBodyTest extends TestCase
     }
 
     /**
+     * 送信処理を実行しても何も出力されず、true が返されることを確認します。
+     *
      * @covers ::sendOutput
      */
     public function testSendOutput(): void
@@ -47,6 +55,8 @@ class EmptyBodyTest extends TestCase
     }
 
     /**
+     * 常に同一のインスタンスが返されることを確認します。
+     *
      * @covers ::getInstance
      */
     public function testGetInstance(): void

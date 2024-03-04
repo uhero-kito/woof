@@ -10,12 +10,16 @@ use PHPUnit\Framework\TestCase;
 class TextBodyTest extends TestCase
 {
     /**
+     * テスト用の文字列データです。
+     *
      * @var string
      */
     const TEST_STRING = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
     /**
-     * @return TextBody
+     * テスト用の TextBody インスタンスを生成して返します。
+     *
+     * @return TextBody テスト用のインスタンス
      */
     private function getTestObject(): TextBody
     {
@@ -23,6 +27,8 @@ class TextBodyTest extends TestCase
     }
 
     /**
+     * 設定した文字列が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getOutput
      */
@@ -33,6 +39,8 @@ class TextBodyTest extends TestCase
     }
 
     /**
+     * 設定した文字列が正しく出力され、true が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::sendOutput
      */
@@ -44,6 +52,8 @@ class TextBodyTest extends TestCase
     }
 
     /**
+     * 設定した Content-Type が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentType
      */
@@ -54,6 +64,8 @@ class TextBodyTest extends TestCase
     }
 
     /**
+     * 設定した文字列のバイト数が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentLength
      */

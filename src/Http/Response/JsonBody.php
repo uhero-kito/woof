@@ -5,21 +5,28 @@ namespace Woof\Http\Response;
 use Woof\Util\DataObject;
 use Woof\Util\RawDataObject;
 
+/**
+ * データを JSON 形式にエンコードしてレスポンスボディとして送信するクラスです。
+ */
 class JsonBody implements Body
 {
     /**
+     * JSON の元となるデータオブジェクトです。
+     *
      * @var DataObject
      */
     private $data;
 
     /**
-     * json_encode() の引数として指定されるオプション
+     * json_encode() 実行時に適用されるオプション (ビットマスク) です。
      *
      * @var int
      */
     private $encodeOptions;
 
     /**
+     * エンコード済みの JSON 文字列です。
+     *
      * @var string
      */
     private $output;
@@ -27,8 +34,8 @@ class JsonBody implements Body
     /**
      * 指定された値を JSON として取り扱う JsonBody オブジェクトを生成します。
      *
-     * @param DataObject|array $data
-     * @param int $encodeOptions json_encode() のオプション
+     * @param DataObject|array $data JSON 化するデータ (配列を渡した場合は内部で RawDataObject に変換されます)
+     * @param int $encodeOptions json_encode() に渡すオプションのビットマスク (デフォルトは 0)
      */
     public function __construct($data, int $encodeOptions = 0)
     {
@@ -39,7 +46,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return DataObject
+     * JSON の元となっているデータオブジェクトを取得します。
+     *
+     * @return DataObject データオブジェクト
      */
     public function getData(): DataObject
     {
@@ -47,7 +56,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return int
+     * エンコード時に指定されたオプションのビットマスクを取得します。
+     *
+     * @return int json_encode() のオプション
      */
     public function getEncodeOptions(): int
     {
@@ -55,7 +66,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return string
+     * エンコード済みの JSON 文字列を取得します。
+     *
+     * @return string JSON 文字列
      */
     public function getOutput(): string
     {
@@ -63,7 +76,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return bool
+     * エンコード済みの JSON 文字列をクライアントに送信します。
+     *
+     * @return bool 常に true
      */
     public function sendOutput(): bool
     {
@@ -72,7 +87,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return string
+     * 常に "application/json" を返します。
+     *
+     * @return string "application/json"
      */
     public function getContentType(): string
     {
@@ -80,7 +97,9 @@ class JsonBody implements Body
     }
 
     /**
-     * @return int
+     * JSON 文字列のバイト数を返します。
+     *
+     * @return int コンテンツのバイト数
      */
     public function getContentLength(): int
     {
