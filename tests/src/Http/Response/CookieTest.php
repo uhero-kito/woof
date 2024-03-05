@@ -10,10 +10,15 @@ use PHPUnit\Framework\TestCase;
 class CookieTest extends TestCase
 {
     /**
+     * テスト用の CookieAttributes インスタンスです。
+     *
      * @var CookieAttributes
      */
     private $attributes;
 
+    /**
+     * テスト用の CookieAttributes インスタンスを準備します。
+     */
     protected function setUp(): void
     {
         $this->attributes = (new CookieAttributesBuilder())
@@ -27,6 +32,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した Cookie の名前が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getName
      */
@@ -37,6 +44,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した Cookie の値が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getValue
      */
@@ -47,6 +56,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定したドメイン名が正しく取得できることと、未設定の場合は空文字列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getDomain
      */
@@ -59,6 +70,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定したパスが正しく取得できることと、未設定の場合は空文字列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getPath
      */
@@ -71,6 +84,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した有効期限が正しく取得できることと、未設定の場合は 0 が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getExpires
      */
@@ -83,6 +98,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した Secure フラグが正しく取得できることと、未設定の場合は false が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::isSecure
      */
@@ -95,6 +112,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した HttpOnly フラグが正しく取得できることと、未設定の場合は false が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::isHttpOnly
      */
@@ -107,6 +126,8 @@ class CookieTest extends TestCase
     }
 
     /**
+     * 設定した SameSite 属性の値が正しく取得できることと、未設定の場合は空文字列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getSameSite
      */
