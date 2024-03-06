@@ -14,6 +14,8 @@ use Woof\Http\Response\TextBody;
 class ResponseTest extends TestCase
 {
     /**
+     * 設定された Body が正しく取得できることと、未設定時は EmptyBody が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getBody
@@ -29,6 +31,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * 設定された Status が正しく取得できることと、未設定時は 200 OK が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getStatus
@@ -44,6 +48,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * 大文字・小文字を区別せずにヘッダーの存在確認ができることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::hasHeader
@@ -58,6 +64,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * 指定したヘッダーが正しく取得できることと、存在しない場合は EmptyField が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHeader
@@ -73,6 +81,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * 登録されたすべてのヘッダーが配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHeaderList
@@ -89,6 +99,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * Body が設定されている場合、オブジェクト生成時に Content-Type と Content-Length ヘッダーが自動的に付与されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getHeaderList
@@ -106,6 +118,8 @@ class ResponseTest extends TestCase
     }
 
     /**
+     * 設定されたすべての Cookie が配列として正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getCookieList

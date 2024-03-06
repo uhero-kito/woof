@@ -6,28 +6,43 @@ use Woof\Http\Response\Body;
 use Woof\Http\Response\Cookie;
 use Woof\Http\Response\EmptyBody;
 
+/**
+ * HTTP レスポンス全体 (レスポンスボディ, ステータス, ヘッダー, Cookie) の情報を保持するデータクラスです。
+ */
 class Response
 {
     /**
+     * レスポンスのボディ (コンテンツ) を保持するオブジェクトです。
+     *
      * @var Body
      */
     private $body;
 
     /**
+     * HTTP ステータスをあらわすオブジェクトです。
+     *
      * @var Status
      */
     private $status;
 
     /**
+     * ヘッダー名 (小文字) をキーとした HeaderField オブジェクトの連想配列です。
+     *
      * @var HeaderField[]
      */
     private $headerList;
 
     /**
+     * Cookie の名前をキーとした、Cookie オブジェクトの連想配列です。
+     *
      * @var Cookie[]
      */
     private $cookieList;
 
+    /**
+     * このクラスは ResponseBuilder を使用して初期化します。
+     * 外部から直接インスタンス化することはできません。
+     */
     private function __construct()
     {
         $this->headerList = [];
@@ -35,10 +50,13 @@ class Response
     }
 
     /**
+     * ResponseBuilder の状態を元に、新しい Response インスタンスを生成します。
+     *
+     * Body が設定されている場合は、自動的に Content-Type と Content-Length ヘッダーが付与されます。
      * このメソッドは ResponseBuilder::build() から参照されます。
      *
-     * @param ResponseBuilder $builder
-     * @return ResponseBuilder
+     * @param ResponseBuilder $builder 構築済みのビルダーオブジェクト
+     * @return Response 生成された Response オブジェクト
      * @ignore
      */
     public static function newInstance(ResponseBuilder $builder): self
@@ -47,7 +65,7 @@ class Response
         $headerList = $builder->getHeaderList();
         if ($body !== EmptyBody::getInstance()) {
             $headerList["content-type"]   = new TextField("Content-Type", $body->getContentType());
-            $headerList["content-length"] = new TextField("Content-Length", $body->getContentLength());
+            $headerList["content-length"] = new TextField("Content-Length", (string) $body->getContentLength());
         }
 
         $res             = new Response();
@@ -59,7 +77,9 @@ class Response
     }
 
     /**
-     * @return Body
+     * レスポンスボディを取得します。
+     *
+     * @return Body レスポンスボディをあらわす Body オブジェクト
      */
     public function getBody(): Body
     {
@@ -67,7 +87,9 @@ class Response
     }
 
     /**
-     * @return Status
+     * HTTP ステータスを取得します。
+     *
+     * @return Status HTTP ステータスをあらわす Status オブジェクト
      */
     public function getStatus(): Status
     {
@@ -92,8 +114,8 @@ class Response
      * もしも指定されたヘッダーが存在しない場合は EmptyField を返します。
      * ヘッダー名の大文字・小文字は区別されません。
      *
-     * @param string $name
-     * @return HeaderField
+     * @param string $name 取得したいヘッダー名
+     * @return HeaderField ヘッダー情報を表現する HeaderField オブジェクト (存在しない場合は EmptyField)
      */
     public function getHeader(string $name): HeaderField
     {
@@ -102,7 +124,9 @@ class Response
     }
 
     /**
-     * @return HeaderField[]
+     * 設定されているすべてのヘッダーフィールドの配列を取得します。
+     *
+     * @return HeaderField[] HeaderField オブジェクトの配列 (インデックス配列)
      */
     public function getHeaderList(): array
     {
@@ -110,7 +134,9 @@ class Response
     }
 
     /**
-     * @return Cookie[]
+     * 設定されているすべての Cookie を取得します。
+     *
+     * @return Cookie[] Cookie 名をキーとした連想配列
      */
     public function getCookieList(): array
     {
