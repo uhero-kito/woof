@@ -10,8 +10,10 @@ use PHPUnit\Framework\TestCase;
 class ParserContextTest extends TestCase
 {
     /**
-     * @param string $source
-     * @param mixed $expected
+     * さまざまな型のシリアライズ文字列が正しく連想配列に復元されることを確認します。
+     *
+     * @param string $source テスト対象のシリアライズ文字列
+     * @param array $expected 期待される復元後の連想配列
      * @covers ::__construct
      * @covers ::parse
      * @covers ::<private>
@@ -24,7 +26,9 @@ class ParserContextTest extends TestCase
     }
 
     /**
-     * @return array
+     * testParse() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestParse()
     {
@@ -39,6 +43,8 @@ class ParserContextTest extends TestCase
     }
 
     /**
+     * 配列を含む複雑なシリアライズ文字列が正しく復元されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::parse
      * @covers ::<private>
@@ -55,7 +61,9 @@ class ParserContextTest extends TestCase
     }
 
     /**
-     * @param string $source
+     * 不正なフォーマットの文字列を渡した場合に ParseException がスローされることを確認します。
+     *
+     * @param string $source 不正なフォーマットの文字列
      * @covers ::parse
      * @covers ::<private>
      * @dataProvider provideTestParseByInvalidFormat
@@ -68,7 +76,9 @@ class ParserContextTest extends TestCase
     }
 
     /**
-     * @return array
+     * testParseByInvalidFormat() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestParseByInvalidFormat(): array
     {
