@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 class SessionTest extends TestCase
 {
     /**
+     * 不正な形式のセッション ID を指定してインスタンスを生成しようとした場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::__construct
      */
     public function testConstructFailByInvalidId(): void
@@ -20,8 +22,10 @@ class SessionTest extends TestCase
     }
 
     /**
-     * @param string $id
-     * @param bool $expected
+     * セッション ID が有効な形式 (英数字・ハイフン・カンマのみ) であるか正しく判定されることを確認します。
+     *
+     * @param string $id 判定対象のセッション ID
+     * @param bool $expected 期待される判定結果
      * @dataProvider provideTestValidateId
      * @covers ::validateId
      */
@@ -31,7 +35,9 @@ class SessionTest extends TestCase
     }
 
     /**
-     * @return array
+     * testValidateId() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestValidateId(): array
     {
@@ -44,6 +50,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * 設定されたセッション ID が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getId
      */
@@ -54,6 +62,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * セッションデータの設定・取得、および未設定時に代替値が返されることを確認します。
+     *
      * @covers ::set
      * @covers ::get
      */
@@ -76,6 +86,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * すべてのセッションデータが連想配列として正しく取得できることを確認します。
+     *
      * @covers ::getAll
      */
     public function testGetAll(): void
@@ -96,6 +108,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * 新規作成フラグ (isNew) が正しく設定および取得できることを確認します。
+     *
      * @covers ::isNew
      */
     public function testIsNew(): void
@@ -109,6 +123,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * データが変更された際に isChanged フラグが true になることを確認します。
+     *
      * @covers ::isChanged
      */
     public function testIsChanged(): void
@@ -124,6 +140,8 @@ class SessionTest extends TestCase
     }
 
     /**
+     * セッションデータが空であるかが正しく判定されることを確認します。
+     *
      * @covers ::isEmpty
      */
     public function testIsEmpty(): void
