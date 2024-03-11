@@ -15,22 +15,34 @@ use Woof\Web\Session\SessionStorage;
 use Woof\Web\Session\SessionStorageBuilder;
 
 /**
+ * StandardSessionStorageFactory のテストです。
+ *
+ * このテストではファイルシステムへの書き込み (一時ディレクトリの作成など) を伴うため、
+ * setUp() にてテスト環境の初期化を行っています。
+ *
  * @coversDefaultClass Woof\Web\StandardSessionStorageFactory
  */
 class StandardSessionStorageFactoryTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリパスです。
+     *
      * @var string
      */
     const TMP_DIR = TEST_DATA_DIR . "/Web/StandardSessionStorageFactory/tmp";
 
+    /**
+     * テスト実行前に一時ディレクトリをクリーンアップします。
+     */
     public function setUp(): void
     {
         TestHelper::cleanDirectory(self::TMP_DIR);
     }
 
     /**
-     * @return string
+     * PHP のデフォルトのセッション保存先パスを取得します。
+     *
+     * @return string デフォルトの保存先パス
      */
     private function getDefaultPath(): string
     {
@@ -39,7 +51,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return float
+     * PHP のデフォルトのガベージコレクション実行確率を取得します。
+     *
+     * @return float デフォルトの実行確率
      */
     private function getDefaultGcProbability(): float
     {
@@ -49,7 +63,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return Logger
+     * テスト用の Logger インスタンスを生成して返します。
+     *
+     * @return Logger テスト用ロガー
      */
     private function getTestLogger(): Logger
     {
@@ -59,8 +75,10 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @param array $arr
-     * @return SessionStorage
+     * 配列データをもとに Config を作成し、ファクトリから SessionStorage を生成して返します。
+     *
+     * @param array $arr "session" セクションに割り当てる配列データ
+     * @return SessionStorage 生成されたセッションストレージ
      */
     private function createStorageByArray(array $arr): SessionStorage
     {
@@ -71,8 +89,10 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @param array $arr
-     * @param string $expected
+     * 設定の dirname に応じて、正しいセッション保存先パスが解決されることを確認します。
+     *
+     * @param array $arr 入力となる設定配列
+     * @param string $expected 期待される保存先パス
      * @covers ::create
      * @covers ::getSessionSavePath
      * @dataProvider provideTestGetSessionSavePath
@@ -86,7 +106,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetSessionSavePath() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetSessionSavePath(): array
     {
@@ -102,6 +124,8 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
+     * FileDataStorage を利用しない場合、デフォルトのセッション保存先パスが利用されることを確認します。
+     *
      * @covers ::create
      * @covers ::getSessionSavePath
      */
@@ -118,8 +142,10 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @param array $arr
-     * @param string $expected
+     * 設定の keyname に対応したセッションキーが設定されることを確認します。
+     *
+     * @param array $arr 入力となる設定配列
+     * @param string $expected 期待されるセッションキー
      * @covers ::create
      * @covers ::getSessionKey
      * @dataProvider provideTestGetSessionKey
@@ -131,7 +157,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetSessionKey() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetSessionKey(): array
     {
@@ -147,8 +175,10 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @param array $arr
-     * @param int $expected
+     * 設定の max-age に応じて、正しい有効期間が解決されること、および最小値・最大値で制限されることを確認します。
+     *
+     * @param array $arr 入力となる設定配列
+     * @param int $expected 期待される有効期間 (秒)
      * @covers ::create
      * @covers ::getMaxAge
      * @dataProvider provideTestGetMaxAge
@@ -160,7 +190,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetMaxAge() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetMaxAge(): array
     {
@@ -168,8 +200,8 @@ class StandardSessionStorageFactoryTest extends TestCase
         $arr1 = [];
         $arr2 = ["max-age" => 1800];
         $arr3 = ["max-age" => "asdf"];
-        $arr4 = ["max-age" => 30];
-        $arr5 = ["max-age" => 9000];
+        $arr4 = ["max-age" => 30];   // 最小値 60 より小さいため丸められる
+        $arr5 = ["max-age" => 9000]; // 最大値 7200 より大きいため丸められる
         return [
             [$arr1, $def],
             [$arr2, 1800],
@@ -180,8 +212,11 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @param array $arr
-     * @param float $expected
+     * 設定の gc-probability に応じて、正しい GC 実行確率が設定されることと、
+     * 値が 0.0 〜 1.0 の範囲に制限されることを確認します。
+     *
+     * @param array $arr 入力となる設定配列
+     * @param float $expected 期待される GC 実行確率
      * @covers ::create
      * @covers ::getGcProbability
      * @dataProvider provideTestGetGcProbability
@@ -193,7 +228,9 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetGcProbability() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetGcProbability(): array
     {
@@ -201,8 +238,8 @@ class StandardSessionStorageFactoryTest extends TestCase
         $arr1 = [];
         $arr2 = ["gc-probability" => 0.125];
         $arr3 = ["gc-probability" => "asdf"];
-        $arr4 = ["gc-probability" => -0.25];
-        $arr5 = ["gc-probability" => 1.0675];
+        $arr4 = ["gc-probability" => -0.25]; // 0.0 未満のため丸められる
+        $arr5 = ["gc-probability" => 1.0675]; // 1.0 より大きいため丸められる
         return [
             [$arr1, $def],
             [$arr2, 0.125],
@@ -213,6 +250,8 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
+     * 正常な設定配列を与えた場合に、各パラメータが適用された SessionStorage インスタンスが正しく構築されることを確認します。
+     *
      * @covers ::create
      */
     public function testCreate(): void
