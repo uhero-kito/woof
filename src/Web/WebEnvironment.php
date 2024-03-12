@@ -12,38 +12,50 @@ use Woof\Log\Logger;
 use Woof\System\Variables;
 use Woof\Web\Session\SessionStorage;
 
+/**
+ * Web アプリケーションの実行環境を表現するクラスです。
+ * 既定の Environment の内容に加えて HTTP リクエスト, SessionStorage, Context (URL の書式化をサポートするオブジェクト)
+ * などの Web アプリケーションに特化した機能を提供します。
+ */
 class WebEnvironment extends Environment
 {
     /**
+     * セッションの管理・永続化を行うオブジェクトです。
+     *
      * @var SessionStorage
      */
     private $sessionStorage;
 
     /**
+     * URL の書式化などに使用するオブジェクトです。
+     *
      * @var Context
      */
     private $context;
 
     /**
+     * クライアントから送信された HTTP リクエストの情報を保持するオブジェクトです。
      *
      * @var Request
      */
     private $clientRequest;
 
     /**
-     * このクラスは EnvironmentBuilder を使用して初期化します。
+     * このクラスは WebEnvironmentBuilder を使用して初期化します。
+     * 外部からの直接的なインスタンス化はできません。
      *
      * @codeCoverageIgnore
      */
     private function __construct()
     {
-
     }
 
     /**
-     * @param WebEnvironmentBuilder $builder
-     * @return WebEnvironment
-     * @throws LogicException
+     * WebEnvironmentBuilder の状態を元に、新しい WebEnvironment インスタンスを生成します。
+     *
+     * @param WebEnvironmentBuilder $builder 構築済みのビルダーオブジェクト
+     * @return WebEnvironment 生成された WebEnvironment オブジェクト
+     * @throws LogicException 必須パラメータが設定されていない場合
      */
     public static function newInstance(WebEnvironmentBuilder $builder): self
     {
@@ -53,7 +65,7 @@ class WebEnvironment extends Environment
         $config = $instance->getConfig();
         $data   = $instance->hasDataStorage() ? $instance->getDataStorage() : null;
         $logger = $instance->getLogger();
-        $parser = $builder->hasHeaderParser() ? $parser : null;
+        $parser = $builder->hasHeaderParser() ? $builder->getHeaderParser() : null;
         $sess   = $builder->hasSessionStorage() ? $builder->getSessionStorage() : (new StandardSessionStorageFactory())->create($config, $data, $logger);
 
         $instance->sessionStorage = $sess;
@@ -63,8 +75,10 @@ class WebEnvironment extends Environment
     }
 
     /**
-     * @param Config $config
-     * @return Context
+     * 設定情報から Context オブジェクトを構築します。
+     *
+     * @param Config $config 設定オブジェクト
+     * @return Context 構築された Context オブジェクト
      */
     private static function createContext(Config $config): Context
     {
@@ -74,10 +88,12 @@ class WebEnvironment extends Environment
     }
 
     /**
-     * @param Variables $var
-     * @param Logger $logger
-     * @param HeaderParser $parser
-     * @return Request
+     * サーバー変数などを元に、クライアントの送信した HTTP リクエストをあらわす Request オブジェクトを構築します。
+     *
+     * @param Variables $var PHP のスーパーグローバル変数を抽象化したオブジェクト
+     * @param Logger $logger Request HTTP リクエストの解析時に発生したエラーを記録するための Logger オブジェクト
+     * @param HeaderParser|null $parser ヘッダー解析用の HeaderParser
+     * @return Request 構築された Request オブジェクト
      */
     private static function createClientRequest(Variables $var, Logger $logger, HeaderParser $parser = null)
     {
@@ -85,7 +101,9 @@ class WebEnvironment extends Environment
     }
 
     /**
-     * @return SessionStorage
+     * 設定された SessionStorage オブジェクトを取得します。
+     *
+     * @return SessionStorage 設定された SessionStorage オブジェクト
      */
     public function getSessionStorage(): SessionStorage
     {
@@ -93,7 +111,9 @@ class WebEnvironment extends Environment
     }
 
     /**
-     * @return Context
+     * URL の書式化を行うための Context オブジェクトを取得します。
+     *
+     * @return Context URL の書式化などを行う Context オブジェクト
      */
     public function getContext(): Context
     {
@@ -101,7 +121,9 @@ class WebEnvironment extends Environment
     }
 
     /**
-     * @return Request
+     * クライアントが送信した HTTP リクエストをあらわす Request オブジェクトを取得します。
+     *
+     * @return Request クライアントが送信した HTTP リクエストをあらわす Request オブジェクト
      */
     public function getClientRequest(): Request
     {

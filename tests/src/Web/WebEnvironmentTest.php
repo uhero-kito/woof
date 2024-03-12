@@ -20,15 +20,25 @@ use Woof\Web\Session\SessionStorage;
 use Woof\Web\Session\SessionStorageBuilder;
 
 /**
+ * WebEnvironment のテストです。
+ *
+ * このテストではファイルシステムへの書き込み (一時ディレクトリの作成など) を伴うため、
+ * setUp() にてテスト環境の初期化を行っています。
+ *
  * @coversDefaultClass Woof\Web\WebEnvironment
  */
 class WebEnvironmentTest extends TestCase
 {
     /**
+     * テストデータが配置されるベースディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/Web/WebEnvironment";
 
+    /**
+     * テスト用の一時ディレクトリをクリーンアップし、テスト用サブジェクトをコピーします。
+     */
     public function setUp(): void
     {
         $tmpdir = self::TEST_DIR . "/tmp";
@@ -38,7 +48,9 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @return WebEnvironmentBuilder
+     * 擬似的なサーバー変数を設定した空の WebEnvironmentBuilder を生成して返します。
+     *
+     * @return WebEnvironmentBuilder テスト用ビルダー
      */
     private function createEmptyBuilder(): WebEnvironmentBuilder
     {
@@ -60,7 +72,9 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @return WebEnvironmentBuilder
+     * 各種ディレクトリパスが設定された WebEnvironmentBuilder を生成して返します。
+     *
+     * @return WebEnvironmentBuilder テスト用ビルダー
      */
     private function createTestBuilder(): WebEnvironmentBuilder
     {
@@ -85,6 +99,8 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
+     * 必要な情報が設定された状態で、正しく WebEnvironment インスタンスが構築されることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::init
      * @covers ::<private>
@@ -96,8 +112,10 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @param WebEnvironment $obj
-     * @param Context $expected
+     * 設定情報に基づいた Context が正しく構築および取得できることを確認します。
+     *
+     * @param WebEnvironment $obj 実行環境オブジェクト
+     * @param Context $expected 期待されるコンテキスト
      * @covers ::getContext
      * @dataProvider provideTestGetContext
      */
@@ -107,7 +125,9 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetContext() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetContext(): array
     {
@@ -127,8 +147,10 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @param WebEnvironment $obj
-     * @param SessionStorage $expected
+     * 設定の有無や Builder への直接指定に応じて、適切な SessionStorage が構築・取得できることを確認します。
+     *
+     * @param WebEnvironment $obj 実行環境オブジェクト
+     * @param SessionStorage $expected 期待されるセッションストレージ
      * @covers ::getSessionStorage
      * @dataProvider provideTestGetSessionStorage
      */
@@ -138,7 +160,9 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetSessionStorage() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetSessionStorage(): array
     {
@@ -187,6 +211,8 @@ class WebEnvironmentTest extends TestCase
     }
 
     /**
+     * HTTP リクエストが正しくパースされ、Request オブジェクトとして取得できることを確認します。
+     *
      * @covers ::getClientRequest
      * @covers ::<private>
      */

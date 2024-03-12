@@ -6,21 +6,35 @@ use Woof\EnvironmentBuilder;
 use Woof\Http\HeaderParser;
 use Woof\Web\Session\SessionStorage;
 
+/**
+ * WebEnvironment オブジェクトを構築するためのビルダークラスです。
+ */
 class WebEnvironmentBuilder extends EnvironmentBuilder
 {
     /**
+     * 設定する SessionStorage オブジェクトです。
+     *
      * @var SessionStorage
      */
     private $sessionStorage;
 
     /**
+     * 設定する HeaderParser オブジェクトです。
+     *
      * @var HeaderParser
      */
     private $headerParser;
 
     /**
-     * @param SessionStorage $sessionStorage
-     * @return WebEnvironmentBuilder このオブジェクト
+     * セッションの管理・永続化を行う SessionStorage を設定します。
+     *
+     * 通常は設定ファイル (Config) の内容をもとに標準の SessionStorage が自動で構築されるため、
+     * 基本的にこのメソッドを呼び出す必要はありません。
+     * Redis やデータベースなどを利用した独自のセッション管理機構を組み込みたい場合や、
+     * テスト時にモックオブジェクトを注入したい場合などに使用します。
+     *
+     * @param SessionStorage $sessionStorage カスタムの SessionStorage
+     * @return WebEnvironmentBuilder このオブジェクト自身
      */
     public function setSessionStorage(SessionStorage $sessionStorage): self
     {
@@ -29,7 +43,9 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @return bool
+     * SessionStorage が明示的に設定されているかを判定します。
+     *
+     * @return bool 設定されている場合に true
      */
     public function hasSessionStorage(): bool
     {
@@ -37,7 +53,9 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @return SessionStorage
+     * 明示的に設定された SessionStorage を取得します。
+     *
+     * @return SessionStorage 設定された SessionStorage オブジェクト
      */
     public function getSessionStorage(): SessionStorage
     {
@@ -45,8 +63,14 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @param HeaderParser $parser
-     * @return WebEnvironmentBuilder このオブジェクト
+     * HTTP ヘッダー文字列を解析するための HeaderParser を設定します。
+     *
+     * 通常はフレームワーク標準のパーサーが使用されるため、未指定で構いません。
+     * アプリケーション独自の特殊なヘッダー形式に対応させたい場合や、
+     * 標準のパース処理の挙動を上書きしたい場合などに使用します。
+     *
+     * @param HeaderParser $parser カスタムの HeaderParser
+     * @return WebEnvironmentBuilder このオブジェクト自身
      */
     public function setHeaderParser(HeaderParser $parser): self
     {
@@ -55,7 +79,9 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @return bool
+     * HeaderParser が明示的に設定されているかを判定します。
+     *
+     * @return bool 設定されている場合に true
      */
     public function hasHeaderParser(): bool
     {
@@ -63,7 +89,9 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @return HeaderParser
+     * 明示的に設定されたヘッダーパーサーを取得します。
+     *
+     * @return HeaderParser 設定された HeaderParser オブジェクト
      */
     public function getHeaderParser(): HeaderParser
     {
@@ -71,7 +99,9 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     }
 
     /**
-     * @return WebEnvironment
+     * このオブジェクトの設定内容に基づいて WebEnvironment インスタンスを構築します。
+     *
+     * @return WebEnvironment 構築された WebEnvironment オブジェクト
      */
     public function build(): WebEnvironment
     {
