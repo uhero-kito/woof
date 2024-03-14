@@ -21,15 +21,25 @@ use Woof\System\VariablesBuilder;
 use Woof\Util\FileProperties;
 
 /**
+ * DefaultEnvironment のテストです。
+ *
+ * このテストクラスでは物理ファイルの入出力が発生するため
+ * setUp() でテスト用の一時ディレクトリのクリーニングとテストデータのコピーを行っています。
+ *
  * @coversDefaultClass Woof\DefaultEnvironment
  */
 class DefaultEnvironmentTest extends TestCase
 {
     /**
+     * テストデータが配置されるディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/DefaultEnvironment";
 
+    /**
+     * テスト用の一時ディレクトリの準備とテストデータのコピーを行います。
+     */
     public function setUp(): void
     {
         $tmpdir = self::TEST_DIR . "/tmp";
@@ -39,7 +49,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return EnvironmentBuilder
+     * テスト用の EnvironmentBuilder インスタンスを生成して返します。
+     *
+     * @return EnvironmentBuilder テスト用のビルダーインスタンス
      */
     private function createTestBuilder(): EnvironmentBuilder
     {
@@ -64,6 +76,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * DefaultEnvironment オブジェクトが正しく生成されることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::init
      */
@@ -74,6 +88,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された Config オブジェクトが正しく取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::getConfig
      */
@@ -85,6 +101,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された Resources オブジェクトが正しく取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::getResources
      */
@@ -96,8 +114,10 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @param DefaultEnvironment $obj
-     * @param bool $expected
+     * DataStorage が設定されているかどうかを正しく判定できることを確認します。
+     *
+     * @param DefaultEnvironment $obj テスト対象の環境オブジェクト
+     * @param bool $expected 期待される判定結果
      * @covers ::hasDataStorage
      * @dataProvider provideTestHasDataStorage
      */
@@ -107,7 +127,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testHasDataStorage() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestHasDataStorage(): array
     {
@@ -122,6 +144,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された DataStorage オブジェクトが正しく取得できることを確認します。
+     *
      * @covers ::newInstance
      * @covers ::getDataStorage
      */
@@ -134,7 +158,7 @@ class DefaultEnvironmentTest extends TestCase
 
     /**
      * DataStorage が設定されていない Environment オブジェクトの
-     * getDataStorage() を実行した場合 LogicException をスローします。
+     * getDataStorage() を実行した場合 LogicException をスローすることを確認します。
      *
      * @covers ::newInstance
      * @covers ::getDataStorage
@@ -148,8 +172,10 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @param Environment $obj
-     * @param Logger $expected
+     * 設定に応じた Logger オブジェクトが正しく取得できること (フォールバックを含む) を確認します。
+     *
+     * @param Environment $obj テスト対象の環境オブジェクト
+     * @param Logger $expected 期待される Logger オブジェクト
      * @covers ::getLogger
      * @dataProvider provideTestGetLogger
      */
@@ -159,7 +185,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetLogger() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetLogger(): array
     {
@@ -199,9 +227,10 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された Clock オブジェクトが正しく取得できることを確認します。
      *
-     * @param Environment $obj
-     * @param Clock $expected
+     * @param Environment $obj テスト対象の環境オブジェクト
+     * @param Clock $expected 期待される Clock オブジェクト
      * @covers ::getClock
      * @dataProvider provideTestGetClock
      */
@@ -211,7 +240,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetClock() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetClock(): array
     {
@@ -226,6 +257,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された Clock オブジェクトに基づく現在時刻 (Unix time) が正しく取得できることを確認します。
+     *
      * @covers ::now
      */
     public function testNow(): void
@@ -236,8 +269,10 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @param Environment $obj
-     * @param Random $expected
+     * 設定された Random オブジェクトが正しく取得できることを確認します。
+     *
+     * @param Environment $obj テスト対象の環境オブジェクト
+     * @param Random $expected 期待される Random オブジェクト
      * @covers ::getRandom
      * @dataProvider provideTestGetRandom
      */
@@ -247,7 +282,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetRandom() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetRandom(): array
     {
@@ -262,6 +299,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 乱数生成において、最大値が最小値を下回った場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::rand
      */
     public function testRandFail(): void
@@ -272,6 +311,8 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
+     * 設定された範囲に応じた乱数が正しく生成されることを確認します。
+     *
      * @covers ::rand
      */
     public function testRand(): void
@@ -296,8 +337,10 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @param Environment $obj
-     * @param Variables $expected
+     * 設定された Variables オブジェクトが正しく取得できることを確認します。
+     *
+     * @param Environment $obj テスト対象の環境オブジェクト
+     * @param Variables $expected 期待される Variables オブジェクト
      * @covers ::getVariables
      * @dataProvider provideTestGetVariables
      */
@@ -307,7 +350,9 @@ class DefaultEnvironmentTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetVariables() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetVariables(): array
     {

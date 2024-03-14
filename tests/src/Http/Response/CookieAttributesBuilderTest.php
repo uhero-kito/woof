@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 class CookieAttributesBuilderTest extends TestCase
 {
     /**
+     * ドメイン名の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setDomain
      * @covers ::getDomain
      */
@@ -22,6 +24,8 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
+     * パスの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setPath
      * @covers ::getPath
      */
@@ -33,6 +37,8 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
+     * 有効期限の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setExpires
      * @covers ::getExpires
      */
@@ -44,6 +50,8 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
+     * Secure フラグの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setSecure
      * @covers ::isSecure
      */
@@ -55,6 +63,8 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
+     * HttpOnly フラグの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setHttpOnly
      * @covers ::isHttpOnly
      */
@@ -66,7 +76,10 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
-     * @param string $value
+     * SameSite 属性の設定と取得が正しく機能し、大文字・小文字が適切に整形されることを確認します。
+     *
+     * @param string $value 設定する値
+     * @param string $expected 期待される整形後の値
      * @dataProvider provideTestSetSameSiteAndGetSameSite
      * @covers ::setSameSite
      * @covers ::getSameSite
@@ -79,7 +92,9 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
-     * @return array
+     * testSetSameSiteAndGetSameSite() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestSetSameSiteAndGetSameSite(): array
     {
@@ -92,6 +107,8 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
+     * 不正な SameSite 属性の値を設定しようとした際に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::setSameSite
      */
     public function testSetSameSiteFail(): void
@@ -101,7 +118,9 @@ class CookieAttributesBuilderTest extends TestCase
     }
 
     /**
-     * @return ::build
+     * CookieAttributes インスタンスが正しく構築されることを確認します。
+     *
+     * @covers ::build
      */
     public function testBuild(): void
     {

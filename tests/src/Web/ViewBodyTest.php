@@ -12,12 +12,16 @@ use Woof\Resources;
 class ViewBodyTest extends TestCase
 {
     /**
+     * テストデータが配置されるディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/Web/ViewBody/subjects";
 
     /**
-     * @return ViewBody
+     * テスト用の ViewBody インスタンスを生成して返します。
+     *
+     * @return ViewBody テスト用のインスタンス
      */
     private function getTestObject(): ViewBody
     {
@@ -25,13 +29,18 @@ class ViewBodyTest extends TestCase
     }
 
     /**
-     * @return string
+     * テストデータの文字列を取得します。
+     *
+     * @return string ファイルの内容
      */
     private function getTestData(): string
     {
         return file_get_contents(self::TEST_DIR . "/sample.txt");
     }
+
     /**
+     * 保持している View オブジェクトが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getView
      */
@@ -41,6 +50,8 @@ class ViewBodyTest extends TestCase
     }
 
     /**
+     * レンダリング結果の文字長が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentLength
      */
@@ -50,6 +61,8 @@ class ViewBodyTest extends TestCase
     }
 
     /**
+     * View オブジェクトに設定された Content-Type が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentType
      */
@@ -59,6 +72,8 @@ class ViewBodyTest extends TestCase
     }
 
     /**
+     * レンダリング結果の文字列が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getOutput
      */
@@ -68,6 +83,8 @@ class ViewBodyTest extends TestCase
     }
 
     /**
+     * レンダリング結果が正しく出力され、true が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::sendOutput
      */
@@ -78,10 +95,15 @@ class ViewBodyTest extends TestCase
     }
 }
 
+/**
+ * ViewBodyTest で使用するためのダミーの View 実装クラスです。
+ */
 class ViewBodyTest_TestView implements View
 {
     /**
-     * @return string
+     * ダミーの Content-Type を返します。
+     *
+     * @return string "text/plain"
      */
     public function getContentType(): string
     {
@@ -89,9 +111,11 @@ class ViewBodyTest_TestView implements View
     }
 
     /**
-     * @param Resources $resources
-     * @param Context $context
-     * @return string
+     * 引数のリソースから sample.txt を読み込んで返します。
+     *
+     * @param Resources $resources リソースオブジェクト
+     * @param Context $context コンテキストオブジェクト
+     * @return string 読み込まれた文字列
      */
     public function render(Resources $resources, Context $context): string
     {

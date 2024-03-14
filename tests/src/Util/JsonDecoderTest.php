@@ -5,26 +5,41 @@ namespace Woof\Util;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * JsonDecoder のテストです。
+ *
+ * このテストクラスでは、不正な文字列をパースした際に発生する PHP の警告 (Warning) を抑制するため、
+ * setUp() で一時的に error_reporting を 0 に変更しています。
+ *
  * @coversDefaultClass Woof\Util\JsonDecoder
  */
 class JsonDecoderTest extends TestCase
 {
     /**
+     * テスト実行前の元の error_reporting 設定を保持します。
+     *
      * @var int
      */
     private $errorReporting;
 
+    /**
+     * テスト実行中の Warning 出力を抑制します。
+     */
     public function setUp(): void
     {
         $this->errorReporting = error_reporting(0);
     }
 
+    /**
+     * 変更した error_reporting の設定を元の状態に戻します。
+     */
     public function tearDown(): void
     {
         error_reporting($this->errorReporting);
     }
 
     /**
+     * 同一のインスタンスが返されることを確認します。
+     *
      * @covers ::getInstance
      */
     public function testGetInstance(): void
@@ -36,8 +51,10 @@ class JsonDecoderTest extends TestCase
     }
 
     /**
-     * @param string $src
-     * @param array $expected
+     * JSON 形式の文字列が正しく配列に変換されることと、不正な文字列や配列以外の場合は空配列が返されることを確認します。
+     *
+     * @param string $src パース対象の文字列
+     * @param array $expected 期待される配列
      * @covers ::getInstance
      * @covers ::parse
      * @dataProvider provideTestParse
@@ -49,7 +66,9 @@ class JsonDecoderTest extends TestCase
     }
 
     /**
-     * @return array
+     * testParse() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestParse(): array
     {

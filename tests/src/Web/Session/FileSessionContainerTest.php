@@ -11,28 +11,39 @@ use Woof\System\FileSystemException;
 use Woof\System\FixedClock;
 
 /**
+ * FileSessionContainer のテストです。
+ *
+ * このテストクラスではファイルシステムの操作 (ディレクトリ作成・ファイル書き込み) およびタイムゾーンの変更を伴うため、
+ * setUp() と tearDown() にて環境の初期化と復元を行っています。
+ *
  * @coversDefaultClass Woof\Web\Session\FileSessionContainer
  */
 class FileSessionContainerTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリのパスです。
+     *
      * @var string
      */
     private $tmpdir;
 
     /**
+     * テスト用のログディレクトリのパスです。
+     *
      * @var string
      */
     private $logdir;
 
     /**
+     * 元のタイムゾーン設定を退避しておくための変数です。
+     *
      * @var string
      */
     private $defaultTimezone;
 
     /**
      * 擬似的なセッション保存領域を作成します。
-     * また、テストのためタイムゾーンを Asia/Tokyo に固定します。
+     * また、テストの実行環境に依存しないようタイムゾーンを Asia/Tokyo に固定します。
      */
     protected function setUp(): void
     {
@@ -61,7 +72,9 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @return Logger
+     * テスト用の Logger を生成して返します。
+     *
+     * @return Logger テスト用の Logger オブジェクト
      */
     private function getLogger(): Logger
     {
@@ -73,6 +86,8 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
+     * 存在しないディレクトリを指定した場合に FileSystemException がスローされることを確認します。
+     *
      * @covers ::__construct
      */
     public function testConstructFailByInvalidDirectory(): void
@@ -82,8 +97,10 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @param int $maxAge
-     * @param int $expected
+     * 生存期間の設定に応じて、有効期限切れのセッションファイルが正しく削除されることを確認します。
+     *
+     * @param int $maxAge セッションの生存期間 (秒)
+     * @param int $expected 削除されるファイルの期待件数
      * @covers ::__construct
      * @covers ::cleanExpiredSessions
      * @dataProvider provideTestCleanExpiredSessions
@@ -95,7 +112,9 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testCleanExpiredSessions() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestCleanExpiredSessions(): array
     {
@@ -107,9 +126,11 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @param string $id
-     * @param int $maxAge
-     * @param bool $expected
+     * セッション ID と生存期間に基づき、有効なセッションが存在するかどうかが正しく判定されることを確認します。
+     *
+     * @param string $id セッション ID
+     * @param int $maxAge セッションの生存期間 (秒)
+     * @param bool $expected 期待される判定結果
      * @dataProvider provideTestContains
      */
     public function testContains(string $id, int $maxAge, bool $expected): void
@@ -119,7 +140,9 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testContains() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestContains(): array
     {
@@ -132,8 +155,10 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @param string $id
-     * @param array $expected
+     * 有効なセッションファイルが正しくロードされ、ロード後にファイルの更新日時が現在時刻に更新されることを確認します。
+     *
+     * @param string $id セッション ID
+     * @param array $expected 期待されるセッションデータ
      * @covers ::__construct
      * @covers ::load
      * @dataProvider provideTestLoadSuccess
@@ -149,7 +174,9 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * @return array
+     * testLoadSuccess() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestLoadSuccess(): array
     {
@@ -160,6 +187,8 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
+     * 存在しないセッション ID を読み込もうとした場合に、空の配列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::load
      */
@@ -170,6 +199,8 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
+     * フォーマットが不正なセッションファイルを読み込もうとした場合に、エラーログが記録され空の配列が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::load
      */
@@ -184,6 +215,8 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
+     * セッションデータが指定したフォーマットで正しくファイルに保存されることを確認します。
+     *
      * @covers ::save
      * @covers ::<private>
      */
@@ -197,10 +230,7 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * save() が失敗した時の挙動をテストします。下記を確認します。
-     *
-     * - 返り値が false になること
-     * - 保存に失敗した旨の ALERT ログが書き込まれること
+     * ディレクトリ削除等により保存に失敗した場合、false が返されエラーログが記録されることを確認します。
      *
      * @covers ::save
      * @covers ::<private>

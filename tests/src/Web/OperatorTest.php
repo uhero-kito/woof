@@ -18,15 +18,25 @@ use Woof\Resources;
 use Woof\System\VariablesBuilder;
 
 /**
+ * Operator のテストです。
+ *
+ * このテストではファイルシステムの操作 (一時ディレクトリの作成・ファイルのコピーなど) を伴うため、
+ * setUp() にてテスト環境の初期化を行っています。
+ *
  * @coversDefaultClass Woof\Web\Operator
  */
 class OperatorTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリパスです。
+     *
      * @var string
      */
     const TMP_DIR = TEST_DATA_DIR . "/Web/Operator/tmp";
 
+    /**
+     * 一時ディレクトリをクリーンアップし、テスト用データをコピーします。
+     */
     protected function setUp(): void
     {
         $tmpdir  = self::TMP_DIR;
@@ -35,6 +45,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * テスト用の WebEnvironment インスタンスを生成して返します。
+     *
      * @return WebEnvironment
      */
     private function createTestWebEnvironment(): WebEnvironment
@@ -64,7 +76,9 @@ class OperatorTest extends TestCase
     }
 
     /**
-     * @param string $id
+     * 指定されたセッション ID を持つ Request オブジェクトを生成して返します。
+     *
+     * @param string $id セッション ID
      * @return Request
      */
     private function createRequestBySessionId(string $id): Request
@@ -79,6 +93,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * キャッシュ検証用のヘッダーを持つ Request オブジェクトを生成して返します。
+     *
      * @return Request
      */
     private function createRequestWithCache(): Request
@@ -94,6 +110,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 有効なセッション ID を持つ Request オブジェクトを生成して返します。
+     *
      * @return Request
      */
     private function createRequestWithSession(): Request
@@ -102,6 +120,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 無効なセッション ID を持つ Request オブジェクトを生成して返します。
+     *
      * @return Request
      */
     private function createRequestWithoutSession(): Request
@@ -110,6 +130,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 有効なセッションを持ったテスト用 Operator を生成して返します。
+     *
      * @return Operator
      */
     private function createTestObject(): Operator
@@ -118,6 +140,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 無効なセッションを持ったテスト用 Operator を生成して返します。
+     *
      * @return Operator
      */
     private function createTestObjectWithoutSession(): Operator
@@ -126,6 +150,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * キャッシュ検証用のリクエストを持ったテスト用 Operator を生成して返します。
+     *
      * @return Operator
      */
     private function createTestObjectWithCache(): Operator
@@ -134,6 +160,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 保持している ResponseBuilder が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getResponseBuilder
      */
@@ -145,8 +173,7 @@ class OperatorTest extends TestCase
 
     /**
      * 第 3 引数に Response を指定して Operator インスタンスを初期化した場合、
-     * getResponseBuilder() で取得するオブジェクトにその Response
-     * の情報が引継がれることを確認します。
+     * getResponseBuilder() で取得するオブジェクトにその Response の情報が引継がれることを確認します。
      *
      * @covers ::__construct
      * @covers ::getResponseBuilder
@@ -163,6 +190,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 既存のデータを持つ Session オブジェクトが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getSessionObject
      */
@@ -174,6 +203,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * セッション ID が無効な場合、空の新規セッションをあらわす Session オブジェクトが取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getSessionObject
      */
@@ -187,6 +218,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * セッションデータの設定・取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setSession
      * @covers ::getSession
@@ -199,6 +232,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 新規かつデータが空のセッションに対して保存を実行した場合、ファイルが生成されないことを確認します。
+     *
      * @covers ::__construct
      * @covers ::saveSession
      */
@@ -208,10 +243,12 @@ class OperatorTest extends TestCase
         $obj    = $this->createTestObjectWithoutSession();
         $id     = $obj->getSessionObject()->getId();
         $this->assertSame($obj, $obj->saveSession());
-        $this->assertFileNotExists("{$tmpdir}/data01/sessions/sess_{$id}");
+        $this->assertFileDoesNotExist("{$tmpdir}/data01/sessions/sess_{$id}");
     }
 
     /**
+     * 新規セッションでデータが変更されている場合、ファイルが生成され Cookie がセットされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::saveSession
      */
@@ -234,6 +271,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 既存のセッションに対して保存を実行した場合、ファイルが更新され Cookie は追加されないことを確認します。
+     *
      * @covers ::__construct
      * @covers ::saveSession
      */
@@ -253,6 +292,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * ヘッダーの設定が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setHeader
      */
@@ -267,6 +308,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * View オブジェクトの設定が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setView
      */
@@ -282,6 +325,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * Body オブジェクトの設定が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setBody
      */
@@ -294,6 +339,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * ステータスコードの設定が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setStatus
      */
@@ -306,6 +353,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * Cookie の設定が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setCookie
      */
@@ -321,9 +370,11 @@ class OperatorTest extends TestCase
     }
 
     /**
-     * @param string $path
-     * @param array $queryList
-     * @param string $expected
+     * クエリやパスを含む URL が絶対 URL として正しく書式化されることを確認します。
+     *
+     * @param string $path 対象のパス
+     * @param array $queryList クエリパラメータの連想配列
+     * @param string $expected 期待される絶対 URL
      * @covers ::__construct
      * @covers ::formatAbsoluteUrl
      * @dataProvider provideTestFormatAbsoluteUrl
@@ -335,7 +386,9 @@ class OperatorTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormatAbsoluteUrl() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormatAbsoluteUrl(): array
     {
@@ -350,6 +403,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * リダイレクトの設定が正しく機能し、302 ステータスと Location ヘッダーが付与されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::setRedirect
      */
@@ -365,6 +420,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * すでにステータスが設定されている場合、リダイレクトの設定を行ってもステータスが上書きされないことを確認します。
+     *
      * @covers ::__construct
      * @covers ::setRedirect
      */
@@ -378,9 +435,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * キャッシュ制御ヘッダーをもとに、コンテンツが変更されていないかどうか正しく判定できることを確認します。
      *
-     * @param Operator $obj
-     * @param bool $expected
      * @covers ::checkNotModified
      */
     public function testCheckNotModified(): void
@@ -394,6 +450,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 添付ファイル名の設定が正しく機能し、Content-Disposition ヘッダーが付与されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::setAttachmentFilename
      */
@@ -408,6 +466,8 @@ class OperatorTest extends TestCase
     }
 
     /**
+     * 設定内容に基づいて正しく Response オブジェクトが構築されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::build
      */
@@ -421,10 +481,15 @@ class OperatorTest extends TestCase
     }
 }
 
+/**
+ * OperatorTest で使用するためのダミーの View 実装クラスです。
+ */
 class OperatorTest_TestView implements View
 {
     /**
-     * @return string
+     * ダミーの Content-Type を返します。
+     *
+     * @return string "text/plain"
      */
     public function getContentType(): string
     {
@@ -432,6 +497,8 @@ class OperatorTest_TestView implements View
     }
 
     /**
+     * 固定のダミー文字列を返します。
+     *
      * @param Resources $resources
      * @param Context $context
      * @return string

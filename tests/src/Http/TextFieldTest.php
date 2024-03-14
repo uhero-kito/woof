@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class TextFieldTest extends TestCase
 {
     /**
+     * 設定した値がそのまま文字列として返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::format
      */
@@ -20,6 +22,8 @@ class TextFieldTest extends TestCase
     }
 
     /**
+     * 設定したヘッダー名が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getName
      */
@@ -30,6 +34,8 @@ class TextFieldTest extends TestCase
     }
 
     /**
+     * 設定した値が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getValue
      */

@@ -6,21 +6,30 @@ use InvalidArgumentException;
 use Woof\Log\Logger;
 use Woof\System\Variables;
 
+/**
+ * サーバー変数 ($_SERVER など) からデータを読み取り Request オブジェクトを構築するクラスです。
+ */
 class RequestLoader
 {
     /**
+     * ヘッダーのパース失敗時などに情報を出力するための Logger オブジェクトです。
+     *
      * @var Logger
      */
     private $logger;
 
     /**
+     * 生のヘッダー文字列を HeaderField オブジェクトに変換するためのパーサーです。
+     *
      * @var HeaderParser
      */
     private $parser;
 
     /**
-     * @param Logger $logger
-     * @param HeaderParser $parser
+     * 新しい RequestLoader インスタンスを生成します。
+     *
+     * @param Logger|null $logger エラー記録用の Logger (未指定時は NopLogger)
+     * @param HeaderParser|null $parser ヘッダー解析用のパーサー (未指定時はデフォルトの HeaderParser)
      */
     public function __construct(Logger $logger = null, HeaderParser $parser = null)
     {
@@ -29,7 +38,9 @@ class RequestLoader
     }
 
     /**
-     * @return Logger
+     * 設定されている Logger を取得します。
+     *
+     * @return Logger エラー記録用の Logger オブジェクト
      */
     public function getLogger(): Logger
     {
@@ -37,7 +48,9 @@ class RequestLoader
     }
 
     /**
-     * @return HeaderParser
+     * 設定されている HeaderParser を取得します。
+     *
+     * @return HeaderParser パーサーオブジェクト
      */
     public function getHeaderParser(): HeaderParser
     {
@@ -45,8 +58,11 @@ class RequestLoader
     }
 
     /**
-     * @param Variables $var
-     * @return Request
+     * 指定された Variables オブジェクトからサーバー情報や各種パラメータを読み取り、
+     * Request オブジェクトを構築して返します。
+     *
+     * @param Variables $var PHP のスーパーグローバル変数などを抽象化したオブジェクト
+     * @return Request 構築された Request オブジェクト
      */
     public function load(Variables $var): Request
     {
@@ -74,8 +90,10 @@ class RequestLoader
     }
 
     /**
-     * @param string $uri
-     * @return string
+     * URI 文字列からクエリ文字列 (? 以降) を除外し、パス部分のみを抽出します。
+     *
+     * @param string $uri クエリを含む可能性がある URI
+     * @return string クエリが除外されたパス文字列
      */
     private function detectPath(string $uri)
     {
@@ -83,9 +101,12 @@ class RequestLoader
     }
 
     /**
-     * @param string $key
-     * @param string $value
-     * @return HeaderField
+     * $_SERVER 配列由来の "HTTP_..." 形式のキー名と値を解析し、HeaderField オブジェクトに変換します。
+     * 不正なヘッダーフォーマットが検出された場合は警告をログに出力し、EmptyField を返します。
+     *
+     * @param string $key サーバー変数のキー名 (例: "HTTP_ACCEPT_LANGUAGE")
+     * @param string $value ヘッダーの値
+     * @return HeaderField 生成されたヘッダーフィールドオブジェクト
      */
     private function parseHeader(string $key, string $value): HeaderField
     {
@@ -101,8 +122,10 @@ class RequestLoader
     }
 
     /**
-     * @param array $file
-     * @return UploadFile
+     * $_FILES 配列由来の要素から UploadFile オブジェクトを生成します。
+     *
+     * @param array $file $_FILES の単一要素にあたる配列
+     * @return UploadFile 構築された UploadFile オブジェクト
      */
     private function createUploadFile(array $file): UploadFile
     {

@@ -24,7 +24,7 @@ class DefaultClock implements Clock
      *
      * このメソッドは常に同一のインスタンスを返します。
      *
-     * @return DefaultClock
+     * @return DefaultClock このクラスの唯一のインスタンス
      */
     public static function getInstance(): self
     {

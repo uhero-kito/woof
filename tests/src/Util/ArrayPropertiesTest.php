@@ -11,7 +11,9 @@ use PHPUnit\Framework\TestCase;
 class ArrayPropertiesTest extends TestCase
 {
     /**
-     * @return ArrayProperties
+     * テスト用の ArrayProperties インスタンスを生成します。
+     *
+     * @return ArrayProperties テスト用インスタンス
      */
     private function createTestObject(): ArrayProperties
     {
@@ -21,6 +23,8 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
+     * 初期化に用いた配列全体が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getData
      */
@@ -36,7 +40,9 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @param string $name
+     * 不正なキー名を指定した場合に InvalidArgumentException がスローされることを確認します。
+     *
+     * @param string $name 不正なキー名
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -50,7 +56,9 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetFail() のための不正なキー名のテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetFail(): array
     {
@@ -61,8 +69,10 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param mixed $expected
+     * 指定されたキー名で正しい設定値が取得できることを確認します。
+     *
+     * @param string $name 取得するキー名
+     * @param mixed $expected 期待される設定値
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -75,7 +85,9 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGet() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGet(): array
     {
@@ -90,8 +102,10 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @param string $name
-     * @param mixed $expected
+     * 指定されたキー名が存在するかどうかを正しく判定できることを確認します。
+     *
+     * @param string $name 確認するキー名
+     * @param bool $expected 期待される判定結果
      * @covers ::__construct
      * @covers ::contains
      * @covers ::<private>
@@ -104,7 +118,9 @@ class ArrayPropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testContains() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestContains(): array
     {

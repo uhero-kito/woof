@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class RawDataObjectTest extends TestCase
 {
     /**
+     * コンストラクタで指定した値がそのまま取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::toValue
      */
@@ -22,5 +24,4 @@ class RawDataObjectTest extends TestCase
         $obj = new RawDataObject($arr);
         $this->assertSame($arr, $obj->toValue());
     }
-
 }

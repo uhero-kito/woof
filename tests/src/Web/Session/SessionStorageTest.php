@@ -12,16 +12,25 @@ use Woof\System\ArrayRandom;
 use Woof\System\FixedClock;
 
 /**
+ * SessionStorage のテストです。
+ *
+ * このテストクラスでは、セッションデータのファイル入出力の挙動を検証するため、
+ * setUp() にて一時ディレクトリの作成とテスト用ファイルの配置を行っています。
+ *
  * @coversDefaultClass Woof\Web\Session\SessionStorage
  */
 class SessionStorageTest extends TestCase
 {
     /**
+     * テスト用の一時ディレクトリのパスです。
      *
      * @var string
      */
     private $tmpdir;
 
+    /**
+     * 擬似的なセッション保存領域を作成し、テスト用ファイルを配置します。
+     */
     protected function setUp(): void
     {
         $datadir = TEST_DATA_DIR . "/Web/Session/SessionStorage";
@@ -37,7 +46,9 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * @return SessionStorageBuilder
+     * テスト用の SessionStorageBuilder を生成して返します。
+     *
+     * @return SessionStorageBuilder テスト用の SessionStorageBuilder
      */
     private function createTestBuilder(): SessionStorageBuilder
     {
@@ -50,7 +61,9 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * @return SessionStorage
+     * テスト用の SessionStorage を生成して返します。
+     *
+     * @return SessionStorage テスト用の SessionStorage オブジェクト
      */
     private function createTestObject(): SessionStorage
     {
@@ -58,8 +71,10 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * @param string $sessionId
-     * @return Request
+     * テスト用の Request オブジェクトを生成して返します。
+     *
+     * @param string $sessionId リクエストに付与するセッション ID
+     * @return Request テスト用の Request オブジェクト
      */
     private function createTestRequest(string $sessionId = ""): Request
     {
@@ -71,10 +86,10 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * SessionContainer と key がセットされていない SessionStorageBuilder
-     * からインスタンスを生成しようとした場合 LogicException をスローします。
+     * SessionContainer またはセッションキーが未設定の状態で build() を実行した場合に
+     * LogicException がスローされることを確認します。
      *
-     * @param SessionStorageBuilder $builder
+     * @param SessionStorageBuilder $builder 不完全なビルダー
      * @dataProvider provideTestNewInstanceFail
      * @covers ::__construct
      * @covers ::newInstance
@@ -86,7 +101,9 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * @return array
+     * testNewInstanceFail() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestNewInstanceFail(): array
     {
@@ -97,6 +114,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
+     * 設定された SessionContainer が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getSessionContainer
@@ -108,6 +127,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
+     * 設定されたセッションキーが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getKey
@@ -118,6 +139,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
+     * 設定された有効期間が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getMaxAge
@@ -128,6 +151,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
+     * 設定されたガベージコレクションの実行確率が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getGcProbability
@@ -139,11 +164,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 存在しないセッション ID を指定して getSession() を実行した場合、
-     * 返される Session オブジェクトは下記の状態となります。
-     *
-     * - 新規フラグが true となっていること
-     * - 引数に指定されたセッション ID とは違うセッション ID が新たに割り当てられること
+     * 存在しないセッション ID を持つリクエストを受け取った場合、
+     * 新規フラグが true となり、新たな ID が割り当てられた Session オブジェクトが返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -160,7 +182,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * getSession() の引数に指定された HTTP リクエストのセッション ID が不正だった場合、新規セッションを生成して返します。
+     * 不正な形式のセッション ID を持つリクエストを受け取った場合、新規セッションを生成して返すことを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -177,7 +199,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 指定されたセッションのデータが破損している場合、返される Session オブジェクトのデータは空となります。
+     * 破損したセッションファイルの ID を受け取った場合、データが空の Session オブジェクトが返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -194,11 +216,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 生存中のセッション ID を指定して getSession() を実行した場合、返される Session オブジェクトは以下の状態となります。
-     *
-     * - 新規フラグが false となっていること
-     * - セッション ID が引数に指定されたものに等しいこと
-     * - 保存されているデータを保持していること
+     * 有効なセッション ID を受け取った場合、保存されているデータを保持する Session オブジェクトが返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -221,7 +239,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 有効期限切れのセッション ID を指定して getSession() を実行した場合、セッション ID が新規発行されることを確認します。
+     * 有効期限切れのセッション ID を受け取った場合、新たな ID が割り当てられた新規セッションが返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -238,8 +256,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 指定されたセッション ID を持つ Session オブジェクトが既に生成済みの場合、
-     * SessionStorage 内にキャッシュされている Session オブジェクトを返すことを確認します。
+     * 同一リクエスト (あるいは同一の SessionStorage インスタンス) に対して getSession() を複数回呼び出した場合、
+     * キャッシュされた同一の Session オブジェクトが返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -260,7 +278,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 引数に指定された ID に紐づく Session オブジェクトが取得できることを確認します。
+     * 指定した ID の有効なセッションが存在する場合、そのデータを持つ Session オブジェクトが取得できることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -281,8 +299,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 引数に指定された ID のセッションが存在しない場合、
-     * 指定された ID を持つセッションを新規作成します。
+     * 指定した ID のセッションが存在しない場合、その ID を持つ新規セッションが作成されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -299,8 +316,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 引数に指定された ID のセッションが有効期限切れの場合、
-     * 指定された ID を持つセッションを新規作成します。
+     * 指定した ID のセッションが有効期限切れの場合、その ID を持つ新規セッションが作成されることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -317,8 +333,7 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * 不正なセッション ID を指定して getSessionById() を実行した場合、
-     * InvalidArgumentException をスローすることを確認します。
+     * 不正な形式のセッション ID を指定した場合に InvalidArgumentException がスローされることを確認します。
      *
      * @covers ::__construct
      * @covers ::newInstance
@@ -332,6 +347,8 @@ class SessionStorageTest extends TestCase
     }
 
     /**
+     * セッションデータの保存処理が正しく行われ、ファイルに書き込まれることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::save
@@ -350,10 +367,10 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * セッションを取得する際に一定の確率で期限切れセッションの消去を行うことを確認します。
+     * セッション取得時に、設定された確率に従って期限切れセッションのガベージコレクションが実行されることを確認します。
      *
-     * @param float $gcProbability
-     * @param bool $expected
+     * @param float $gcProbability ガベージコレクションの実行確率
+     * @param bool $expected 削除されるかどうかの期待値
      * @dataProvider provideTestGarbageCorrectionExecuted
      * @covers ::__construct
      * @covers ::newInstance
@@ -374,13 +391,15 @@ class SessionStorageTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGarbageCorrectionExecuted() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGarbageCorrectionExecuted(): array
     {
         return [
-            [1.0, false],
-            [0.0, true],
+            [1.0, false], // 確実に実行されるので、期限切れセッションは存在しなくなる (false)
+            [0.0, true],  // 実行されないので、期限切れセッションは残ったままになる (true)
             [0.25, true],
             [0.75, false],
         ];

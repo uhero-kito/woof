@@ -15,6 +15,8 @@ use Woof\System\FixedClock;
 class SessionStorageBuilderTest extends TestCase
 {
     /**
+     * SessionContainer の設定・存在確認・取得が正しく機能することを確認します。
+     *
      * @covers ::setSessionContainer
      * @covers ::hasSessionContainer
      * @covers ::getSessionContainer
@@ -30,6 +32,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * セッションキー (Cookie 名) の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setKey
      * @covers ::getKey
      */
@@ -42,6 +46,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * 不正な形式のセッションキーを設定しようとした場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::setKey
      */
     public function testSetKeyFail(): void
@@ -52,6 +58,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * 有効期間の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setMaxAge
      * @covers ::getMaxAge
      */
@@ -64,6 +72,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * 有効期間に 0 以下の値を設定しようとした場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::setMaxAge
      */
     public function testSetMaxAgeFail(): void
@@ -74,6 +84,9 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * ガベージコレクションの実行確率の設定と取得が正しく機能することを確認します。
+     *
+     * @param float $p 設定する確率
      * @covers ::setGcProbability
      * @covers ::getGcProbability
      * @dataProvider provideTestSetGcProbabilityAndGetGcProbability
@@ -87,7 +100,9 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
-     * @return array
+     * testSetGcProbabilityAndGetGcProbability() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestSetGcProbabilityAndGetGcProbability(): array
     {
@@ -99,7 +114,9 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
-     * @param float $p
+     * ガベージコレクションの実行確率に範囲外 (0 未満、1 超) の値を設定しようとした場合に InvalidArgumentException がスローされることを確認します。
+     *
+     * @param float $p 範囲外の確率
      * @covers ::setGcProbability
      * @dataProvider provideTestSetGcProbabilityFail
      */
@@ -110,7 +127,9 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
-     * @return array
+     * testSetGcProbabilityFail() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestSetGcProbabilityFail(): array
     {
@@ -121,6 +140,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * Clock オブジェクトの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setClock
      * @covers ::getClock
      */
@@ -134,6 +155,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * Random オブジェクトの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::setRandom
      * @covers ::getRandom
      */
@@ -147,6 +170,8 @@ class SessionStorageBuilderTest extends TestCase
     }
 
     /**
+     * 必要な情報が設定された状態で、正しく SessionStorage インスタンスが構築されることを確認します。
+     *
      * @covers ::build
      */
     public function testBuild(): void

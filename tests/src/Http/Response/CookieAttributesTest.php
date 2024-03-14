@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class CookieAttributesTest extends TestCase
 {
     /**
+     * 設定したドメイン名が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getDomain
@@ -21,6 +23,8 @@ class CookieAttributesTest extends TestCase
     }
 
     /**
+     * 設定したパスが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getPath
@@ -32,6 +36,8 @@ class CookieAttributesTest extends TestCase
     }
 
     /**
+     * 設定した有効期限が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getExpires
@@ -43,6 +49,8 @@ class CookieAttributesTest extends TestCase
     }
 
     /**
+     * 設定した Secure フラグが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::isSecure
@@ -54,6 +62,8 @@ class CookieAttributesTest extends TestCase
     }
 
     /**
+     * 設定した HttpOnly フラグが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::isHttpOnly
@@ -65,6 +75,8 @@ class CookieAttributesTest extends TestCase
     }
 
     /**
+     * 設定した SameSite 属性の値が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      * @covers ::getSameSite
@@ -74,7 +86,10 @@ class CookieAttributesTest extends TestCase
         $obj = (new CookieAttributesBuilder())->setSameSite("lax")->build();
         $this->assertSame("Lax", $obj->getSameSite());
     }
+
     /**
+     * 未設定の状態でデフォルト値が正しく返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::newInstance
      */

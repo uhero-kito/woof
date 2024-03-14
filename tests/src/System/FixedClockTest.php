@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 class FixedClockTest extends TestCase
 {
     /**
-     * コンストラクタ引数に指定された整数値を返します。
+     * コンストラクタ引数に指定された整数値が返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::getTime

@@ -9,45 +9,73 @@ use Woof\System\Clock;
 use Woof\System\Random;
 use Woof\System\Variables;
 
+/**
+ * アプリケーションの実行に必要な各種コンポーネント (設定・各種リソース・ログ・システム時刻など) を集約し、提供する基底クラスです。
+ *
+ * このクラスを通じて、アプリケーション内のどこからでも統一された方法で必要な機能やデータにアクセスすることができます。
+ * 実行される環境 (CLI や WEB など) に応じて、本クラスを継承した以下の具象クラスを使い分けてください。
+ *
+ * - バッチ処理などの CLI 環境: `Woof\DefaultEnvironment` (生成には `DefaultEnvironmentBuilder` を使用)
+ * - WEB アプリケーション環境: `Woof\Web\WebEnvironment` (生成には `WebEnvironmentBuilder` を使用)
+ *
+ * 各具象クラスは直接インスタンス化することはできず、対応する EnvironmentBuilder を通じて生成および初期化を行う必要があります。
+ */
 abstract class Environment
 {
     /**
+     * アプリケーションの設定値を提供するオブジェクトです。
+     *
      * @var Config
      */
     private $config;
 
     /**
+     * 各種リソースを提供するオブジェクトです。
+     *
      * @var Resources
      */
     private $resources;
 
     /**
+     * 動的なデータの読み書きを行うオブジェクトです。
+     *
      * @var DataStorage
      */
     private $dataStorage;
 
     /**
+     * アプリケーションのログ出力を担うオブジェクトです。
+     *
      * @var Logger
      */
     private $logger;
 
     /**
+     * アプリケーション内の基準時刻を提供するオブジェクトです。
+     *
      * @var Clock
      */
     private $clock;
 
     /**
+     * 乱数を生成するオブジェクトです。
+     *
      * @var Random
      */
     private $random;
 
     /**
+     * 各種環境変数やスーパーグローバル変数にあたるデータを提供するオブジェクトです。
+     *
      * @var Variables
      */
     private $variables;
 
     /**
-     * @param EnvironmentBuilder $builder
+     * ビルダーから渡された設定をもとに、このオブジェクトを初期化します。
+     *
+     * @param EnvironmentBuilder $builder 各種コンポーネントがセットされたビルダー
+     * @throws LogicException Config (設定オブジェクト) が指定されていない場合
      */
     protected function init(EnvironmentBuilder $builder): void
     {
@@ -69,7 +97,9 @@ abstract class Environment
     }
 
     /**
-     * @return Config
+     * アプリケーションの設定値を提供する Config オブジェクトを取得します。
+     *
+     * @return Config 設定オブジェクト
      */
     public function getConfig(): Config
     {
@@ -77,7 +107,9 @@ abstract class Environment
     }
 
     /**
-     * @return Resources
+     * テンプレートや翻訳ファイルなどのリソースを提供する Resources オブジェクトを取得します。
+     *
+     * @return Resources リソースオブジェクト
      */
     public function getResources(): Resources
     {
@@ -85,7 +117,9 @@ abstract class Environment
     }
 
     /**
-     * @return bool
+     * 動的なデータの読み書きを行う DataStorage オブジェクトが設定されているか調べます。
+     *
+     * @return bool DataStorage が設定されている場合に true
      */
     public function hasDataStorage(): bool
     {
@@ -93,7 +127,10 @@ abstract class Environment
     }
 
     /**
-     * @return DataStorage
+     * 動的なデータの読み書きを行う DataStorage オブジェクトを取得します。
+     *
+     * @return DataStorage DataStorage オブジェクト
+     * @throws LogicException DataStorage が設定されていない状態で呼び出された場合
      */
     public function getDataStorage(): DataStorage
     {
@@ -104,7 +141,9 @@ abstract class Environment
     }
 
     /**
-     * @return Logger
+     * アプリケーションのログ出力を担う Logger オブジェクトを取得します。
+     *
+     * @return Logger Logger オブジェクト
      */
     public function getLogger(): Logger
     {
@@ -112,7 +151,9 @@ abstract class Environment
     }
 
     /**
-     * @return Clock
+     * アプリケーション内の基準時刻を提供する Clock オブジェクトを取得します。
+     *
+     * @return Clock オブジェクト
      */
     public function getClock()
     {
@@ -120,7 +161,10 @@ abstract class Environment
     }
 
     /**
-     * @return int
+     * 現在の基準時刻を Unix time (整数) で取得します。
+     * 内部的には getClock()->getTime() と同じ結果を返します。
+     *
+     * @return int 現在の基準時刻 (Unix time)
      */
     public function now()
     {
@@ -128,7 +172,9 @@ abstract class Environment
     }
 
     /**
-     * @return Random
+     * 乱数を生成する Random オブジェクトを取得します。
+     *
+     * @return Random Random オブジェクト
      */
     public function getRandom()
     {
@@ -136,12 +182,13 @@ abstract class Environment
     }
 
     /**
-     * 次の乱数値を整数で取得します。
+     * 乱数値を整数で取得します。
+     * 最小値と最大値を指定することで、指定された範囲内の乱数を取得することができます。
      *
-     * @param int $min 返される乱数値の最小値 (デフォルトは 0)
-     * @param int $max 返される乱数値の最大値 (デフォルトは mt_getrandmax())
-     * @return int 次の乱数値
-     * @throws InvalidArgumentException $max が $min よりも小さい場合
+     * @param int|null $min 返される乱数値の最小値 (デフォルトは 0)
+     * @param int|null $max 返される乱数値の最大値 (デフォルトはシステムの最大乱数値)
+     * @return int 生成された乱数値
+     * @throws InvalidArgumentException $max に $min よりも小さい値が指定された場合
      */
     public function rand(int $min = null, int $max = null): int
     {
@@ -165,7 +212,9 @@ abstract class Environment
     }
 
     /**
-     * @return Variables
+     * サーバーやリクエストの環境変数を提供する Variables オブジェクトを取得します。
+     *
+     * @return Variables Variables オブジェクト
      */
     public function getVariables(): Variables
     {

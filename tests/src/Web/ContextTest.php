@@ -10,8 +10,10 @@ use PHPUnit\Framework\TestCase;
 class ContextTest extends TestCase
 {
     /**
-     * @param string $path
-     * @param string $expected
+     * 指定されたパスが正しく基底パスとして取得・整形されることを確認します。
+     *
+     * @param string $path 入力するパス
+     * @param string $expected 期待される基底パス
      * @covers ::__construct
      * @covers ::getRootPath
      * @dataProvider provideTestGetRootPath
@@ -23,7 +25,9 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetRootPath() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetRootPath(): array
     {
@@ -36,8 +40,10 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @param string $path
-     * @param string $expected
+     * クエリパラメータがない場合、リンク先 URL が正しく書式化されることを確認します。
+     *
+     * @param string $path リンク先のパス
+     * @param string $expected 期待される URL 文字列
      * @covers ::__construct
      * @covers ::formatHref
      * @dataProvider provideTestFormatPathWithoutQuery
@@ -49,7 +55,9 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormatPathWithoutQuery() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormatPathWithoutQuery(): array
     {
@@ -64,8 +72,10 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @param array $query
-     * @param string $expected
+     * クエリパラメータが指定された場合、それが正しく URL エンコードされて末尾に付与されることを確認します。
+     *
+     * @param array $query クエリパラメータの配列
+     * @param string $expected 期待される URL 文字列
      * @covers ::__construct
      * @covers ::formatHref
      * @covers ::<private>
@@ -78,7 +88,9 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormatPathWithQuery() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormatPathWithQuery(): array
     {
@@ -92,6 +104,8 @@ class ContextTest extends TestCase
     }
 
     /**
+     * 独自の区切り文字を指定した場合に、クエリパラメータがその文字で結合されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::formatHref
      * @covers ::<private>
@@ -103,6 +117,8 @@ class ContextTest extends TestCase
     }
 
     /**
+     * 第 1 引数のパスに既にクエリ文字 ("?") が含まれている場合、第 2 引数の配列が無視されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::formatHref
      * @covers ::<private>

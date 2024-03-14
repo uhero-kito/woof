@@ -10,15 +10,22 @@ use PHPUnit\Framework\TestCase;
 class UploadFileTest extends TestCase
 {
     /**
+     * テストデータが配置されるディレクトリのパスです。
+     *
      * @var string
      */
     const DATA_DIR = TEST_DATA_DIR . "/Http/UploadFile";
 
     /**
+     * テスト用の UploadFile インスタンスです。
+     *
      * @var UploadFile
      */
     private $object;
 
+    /**
+     * テスト用の UploadFile インスタンスを準備します。
+     */
     protected function setUp(): void
     {
         $path         = self::DATA_DIR . "/tmp.txt";
@@ -27,6 +34,8 @@ class UploadFileTest extends TestCase
     }
 
     /**
+     * 添付ファイルの元のファイル名が正しく取得できることを確認します。
+     *
      * @covers ::getName
      */
     public function testGetName(): void
@@ -35,6 +44,8 @@ class UploadFileTest extends TestCase
     }
 
     /**
+     * サーバー上に保管されているファイルのパスが正しく取得できることを確認します。
+     *
      * @covers ::getPath
      */
     public function testGetPath(): void
@@ -44,6 +55,8 @@ class UploadFileTest extends TestCase
     }
 
     /**
+     * 設定したエラーコードが正しく取得できることを確認します。
+     *
      * @covers ::getErrorCode
      */
     public function testGetErrorCode(): void
@@ -52,6 +65,8 @@ class UploadFileTest extends TestCase
     }
 
     /**
+     * 設定したファイルサイズが正しく取得できることを確認します。
+     *
      * @covers ::getSize
      */
     public function testGetSize(): void
@@ -62,6 +77,8 @@ class UploadFileTest extends TestCase
     }
 
     /**
+     * ファイルのコンテンツが文字列として正しく読み込めることを確認します。
+     *
      * @covers ::getContents
      */
     public function testGetContents(): void
@@ -72,7 +89,7 @@ class UploadFileTest extends TestCase
     }
 
     /**
-     * 添付ファイルが存在しない場合 getContents() は空文字列を返します。
+     * 指定されたパスにファイルが存在しない場合 getContents() が空文字列を返すことを確認します。
      *
      * @covers ::__construct
      * @covers ::getContents

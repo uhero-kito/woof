@@ -6,16 +6,23 @@ use InvalidArgumentException;
 
 /**
  * 指定されたディレクトリ内のファイルの読み書きを行うためのクラスです。
+ *
+ * ファイル操作を特定のベースディレクトリ配下に制限することで、
+ * アプリケーションが意図しない領域のファイルを操作してしまうリスクを防ぎます。
  */
 class FileHandler
 {
     /**
+     * ベースとなるディレクトリ名です。
+     *
      * @var string
      */
     private $dirname;
 
     /**
-     * @param string $dirname ディレクトリ名
+     * 指定されたディレクトリをベースとする FileHandler オブジェクトを生成します。
+     *
+     * @param string $dirname ベースディレクトリ名
      * @throws InvalidArgumentException ディレクトリ名が指定されなかった場合
      * @throws FileSystemException 指定されたディレクトリが存在しない場合
      */
@@ -35,8 +42,8 @@ class FileHandler
      * 指定された相対パスを絶対パスに変換します。
      * このメソッドの挙動は、指定されたパスがファイルシステム上に実際に存在するかどうかとは無関係です。
      *
-     * @param string $path
-     * @return string
+     * @param string $path ベースディレクトリからの相対パス
+     * @return string 解決された絶対パス
      */
     public function formatFullpath(string $path): string
     {
@@ -51,8 +58,10 @@ class FileHandler
     }
 
     /**
-     * @param string $path
-     * @return string
+     * パス文字列から不要なスラッシュや階層移動 (".", "..") を取り除いて正規化します。
+     *
+     * @param string $path 正規化する対象の相対パス
+     * @return string 正規化されたパス文字列
      */
     private function cleanPath(string $path): string
     {
@@ -76,8 +85,11 @@ class FileHandler
     }
 
     /**
-     * @param string $path
-     * @return bool
+     * 書き込み対象のファイルの親ディレクトリが存在することを保証します。
+     * 存在しない場合はディレクトリを再帰的に作成します。
+     *
+     * @param string $path 書き込み対象のファイルの絶対パス
+     * @return bool ディレクトリが存在する、または作成に成功した場合に true
      */
     private function prepareDir(string $path): bool
     {
@@ -88,9 +100,9 @@ class FileHandler
     /**
      * 指定された相対パスに書き込みます。
      *
-     * @param string $path
-     * @param string $contents
-     * @return bool
+     * @param string $path 書き込み先の相対パス
+     * @param string $contents 書き込む内容
+     * @return bool 書き込みに成功した場合に true
      */
     public function put(string $path, string $contents): bool
     {
@@ -103,9 +115,9 @@ class FileHandler
      * 指定された相対パスに引数の内容を追記します。
      * 改行文字の付与はされないため、行を追加したい場合は手動で改行文字を加える必要があります。
      *
-     * @param string $path
-     * @param string $contents
-     * @return bool
+     * @param string $path 追記先の相対パス
+     * @param string $contents 追記する内容
+     * @return bool 追記に成功した場合に true
      */
     public function append(string $path, string $contents): bool
     {
@@ -120,8 +132,8 @@ class FileHandler
      * このメソッドは、ファイルが存在するかどうかを判定することはできません。
      * ファイルの有無を判定する場合は contains() を使用してください。
      *
-     * @param string $path
-     * @return string
+     * @param string $path 読み込むファイルの相対パス
+     * @return string 取得したファイルの内容 (ファイルが存在しない場合は空文字列)
      */
     public function get(string $path): string
     {
@@ -132,8 +144,8 @@ class FileHandler
     /**
      * 指定された相対パスのファイルが存在する場合のみ true を返します。
      *
-     * @param string $path
-     * @return bool
+     * @param string $path 存在を確認するファイルの相対パス
+     * @return bool ファイルが存在する場合に true
      */
     public function contains(string $path): bool
     {

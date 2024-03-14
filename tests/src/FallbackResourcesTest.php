@@ -10,12 +10,16 @@ use PHPUnit\Framework\TestCase;
 class FallbackResourcesTest extends TestCase
 {
     /**
+     * テストデータが配置されているディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/FallbackResources/subjects";
 
     /**
-     * @return FallbackResources
+     * テスト用の FallbackResources インスタンスを生成して返します。
+     *
+     * @return FallbackResources テスト用のインスタンス
      */
     private function createTestObject(): FallbackResources
     {
@@ -26,8 +30,10 @@ class FallbackResourcesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param string $expected
+     * プライマリまたはセカンダリからリソースが正しく取得できること (フォールバックが機能すること) を確認します。
+     *
+     * @param string $key 取得するリソースのキー名
+     * @param string $expected 期待されるリソース内容 (文字列)
      * @dataProvider provideTestGet
      * @covers ::__construct
      * @covers ::get
@@ -38,7 +44,9 @@ class FallbackResourcesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGet() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGet(): array
     {
@@ -50,6 +58,8 @@ class FallbackResourcesTest extends TestCase
     }
 
     /**
+     * プライマリ・セカンダリのどちらにも存在しないリソースを指定した場合に ResourceNotFoundException がスローされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      */
@@ -60,8 +70,10 @@ class FallbackResourcesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param bool $expected
+     * プライマリまたはセカンダリにリソースが存在するかどうかを正しく判定できることを確認します。
+     *
+     * @param string $key 確認するリソースのキー名
+     * @param bool $expected 期待される判定結果
      * @dataProvider provideTestContains
      */
     public function testContains(string $key, bool $expected): void
@@ -70,7 +82,9 @@ class FallbackResourcesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testContains() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestContains(): array
     {

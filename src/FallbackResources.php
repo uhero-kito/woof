@@ -3,12 +3,12 @@
 namespace Woof;
 
 /**
- * 2 種類の Resources オブジェクトを透過的に取り扱うクラスです。
+ * 2 つの Resources オブジェクトを組み合わせ、リソースの取得をフォールバック (代替) するクラスです。
  * このオブジェクトに対するメソッド呼び出しは下記のように処理されます。
  *
- * - 指定されたキーがプライマリの Resources オブジェクトに存在する場合: プライマリのオブジェクトが結果を返します
- * - 指定されたキーがプライマリに存在しない場合: セカンダリのオブジェクトが結果を返します
- * - 指定されたキーがプライマリとセカンダリのどちらにも存在しない場合: ResourceNotFoundException をスローします
+ * - 指定されたキーがプライマリ (第 1 候補) に存在する場合: プライマリから結果を返します
+ * - 指定されたキーがプライマリに存在しない場合: セカンダリ (第 2 候補) から結果を返します
+ * - 指定されたキーがどちらにも存在しない場合: ResourceNotFoundException をスローします
  */
 class FallbackResources implements Resources
 {
@@ -23,8 +23,10 @@ class FallbackResources implements Resources
     private $secondary;
 
     /**
-     * @param Resources $primary
-     * @param Resources $secondary
+     * プライマリとセカンダリの Resources オブジェクトを指定してインスタンスを生成します。
+     *
+     * @param Resources $primary 優先して検索されるプライマリの Resources
+     * @param Resources $secondary プライマリに見つからなかった場合に検索されるセカンダリの Resources
      */
     public function __construct(Resources $primary, Resources $secondary)
     {
@@ -33,8 +35,10 @@ class FallbackResources implements Resources
     }
 
     /**
-     * @param string $key
-     * @return bool
+     * 指定されたキーのリソースが、プライマリまたはセカンダリのいずれかに存在するかを調べます。
+     *
+     * @param string $key 確認したいリソースのキー名
+     * @return bool いずれかにリソースが存在する場合に true
      */
     public function contains(string $key): bool
     {
@@ -42,9 +46,11 @@ class FallbackResources implements Resources
     }
 
     /**
-     * @param string $key
-     * @return string
-     * @throws ResourceNotFoundException
+     * 指定されたキーのリソースをプライマリまたはセカンダリから取得します。
+     *
+     * @param string $key 取得したいリソースのキー名
+     * @return string 取得したリソースの内容
+     * @throws ResourceNotFoundException プライマリ・セカンダリのどちらにもリソースが存在しない場合
      */
     public function get(string $key): string
     {

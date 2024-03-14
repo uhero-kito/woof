@@ -16,11 +16,15 @@ use Woof\Web\Session\SessionStorageBuilder;
 class WebEnvironmentBuilderTest extends TestCase
 {
     /**
+     * テスト用ディレクトリのパスです。
+     *
      * @var string
      */
     const TMP_DIR = TEST_DATA_DIR . "/Web/WebEnvironmentBuilder/tmp";
 
     /**
+     * SessionStorage の設定・存在確認・取得が正しく機能することを確認します。
+     *
      * @covers ::setSessionStorage
      * @covers ::hasSessionStorage
      * @covers ::getSessionStorage
@@ -39,6 +43,8 @@ class WebEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * HeaderParser の設定・存在確認・取得が正しく機能することを確認します。
+     *
      * @covers ::setHeaderParser
      * @covers ::hasHeaderParser
      * @covers ::getHeaderParser
@@ -54,6 +60,8 @@ class WebEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * 必要な情報が設定された状態で、正しく WebEnvironment インスタンスが構築されることを確認します。
+     *
      * @covers ::build
      */
     public function testBuild(): void

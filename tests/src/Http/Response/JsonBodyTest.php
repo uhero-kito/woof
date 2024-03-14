@@ -11,7 +11,9 @@ use PHPUnit\Framework\TestCase;
 class JsonBodyTest extends TestCase
 {
     /**
-     * @return JsonBody
+     * テスト用の JsonBody インスタンスを生成して返します。
+     *
+     * @return JsonBody テスト用のインスタンス
      */
     private function getTestObject(): JsonBody
     {
@@ -29,7 +31,9 @@ class JsonBodyTest extends TestCase
     }
 
     /**
-     * @return string
+     * エンコード結果として期待される JSON 文字列を生成して返します。
+     *
+     * @return string 期待される JSON 文字列
      */
     private function getExpectedOutput(): string
     {
@@ -53,6 +57,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * コンストラクタに配列を渡した場合に、正しく DataObject に変換して保持されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getData
      */
@@ -73,6 +79,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * コンストラクタに DataObject を渡した場合に、そのまま保持されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getData
      */
@@ -89,6 +97,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * 設定したエンコードオプションが正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getEncodeOptions
      */
@@ -99,6 +109,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * エンコードされた JSON 文字列が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getOutput
      */
@@ -109,6 +121,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * エンコードされた JSON 文字列が正しく出力され、true が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::sendOutput
      */
@@ -118,7 +132,10 @@ class JsonBodyTest extends TestCase
         $obj = $this->getTestObject();
         $this->assertTrue($obj->sendOutput());
     }
+
     /**
+     * Content-Type として application/json が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentType
      */
@@ -129,6 +146,8 @@ class JsonBodyTest extends TestCase
     }
 
     /**
+     * エンコードされた JSON 文字列のバイト数が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getContentLength
      */

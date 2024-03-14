@@ -5,6 +5,11 @@ namespace Woof\Log;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * DefaultLogFormat のテストです。
+ *
+ * このテストクラスでは、時刻のフォーマット結果を固定するために、
+ * setUp() で一時的にシステムのタイムゾーンを "Asia/Tokyo" に変更しています。
+ *
  * @coversDefaultClass Woof\Log\DefaultLogFormat
  */
 class DefaultLogFormatTest extends TestCase
@@ -26,7 +31,7 @@ class DefaultLogFormatTest extends TestCase
     }
 
     /**
-     * コンストラクタ引数を省略した場合、時刻のフォーマットが "YYYY-MM-DD HH:MM:DD" 形式となります。
+     * コンストラクタ引数を省略した場合、時刻のフォーマットが "YYYY-MM-DD HH:MM:SS" 形式となることを確認します。
      *
      * @covers ::__construct
      */
@@ -38,7 +43,7 @@ class DefaultLogFormatTest extends TestCase
     }
 
     /**
-     * コンストラクタ引数を指定した場合、引数のフォーマットで時刻を書式化します。
+     * コンストラクタ引数を指定した場合、引数のフォーマットで時刻を書式化することを確認します。
      *
      * @covers ::__construct
      */
@@ -50,10 +55,10 @@ class DefaultLogFormatTest extends TestCase
     }
 
     /**
-     * 引数に指定されたログレベル定数を対応する文字列 ("ERROR" など) に変換して出力します。
+     * 引数に指定されたログレベル定数を対応する文字列 ("ERROR" など) に変換して出力することを確認します。
      *
-     * @param int $level
-     * @param string $expected
+     * @param int $level テスト対象のログレベル
+     * @param string $expected 期待されるフォーマット済みの文字列
      * @covers ::__construct
      * @covers ::format
      * @covers ::formatLogLevel
@@ -67,7 +72,9 @@ class DefaultLogFormatTest extends TestCase
     }
 
     /**
-     * @return array
+     * テストで使用するログレベルと期待される出力文字列の組み合わせを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormatByLevel(): array
     {

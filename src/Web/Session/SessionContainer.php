@@ -2,6 +2,9 @@
 
 namespace Woof\Web\Session;
 
+/**
+ * セッションデータの保存・読み込み・削除を行うためのインタフェースです。
+ */
 interface SessionContainer
 {
     /**
@@ -15,26 +18,25 @@ interface SessionContainer
     public function contains(string $id, int $maxAge): bool;
 
     /**
-     * 指定された ID のセッションを取り出します。
-     * セッションが存在しない場合は空の配列を返します。
+     * 指定された ID のセッションデータを読み込みます。
+     * セッションが存在しない場合・有効期限が切れている場合・フォーマットが不正な場合は空の配列を返します。
      *
      * @param string $id セッション ID
-     * @return array セッション一覧。存在しない場合は空の配列
+     * @return array セッションデータの連想配列 (存在しない場合は空の配列)
      */
     public function load(string $id): array;
 
     /**
-     * 指定されたセッションを保存します。
+     * 指定されたセッションデータを保存します。
      *
-     * @param string $id
-     * @param array 保存するセッションの一覧
+     * @param string $id セッション ID
+     * @param array $data 保存するセッションデータの連想配列
      * @return bool 書き込みに成功した場合に true
      */
     public function save(string $id, array $data): bool;
 
     /**
-     * 有効期限切れのセッションを削除します。
-     * 削除された件数を返します。
+     * 有効期限切れのセッションをこの SessionContainer から削除します。
      *
      * @param int $maxAge セッションの生存期間 (秒数)
      * @return int 削除されたセッションの件数

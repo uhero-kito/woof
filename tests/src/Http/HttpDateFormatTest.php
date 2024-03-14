@@ -7,17 +7,24 @@ use PHPUnit\Framework\TestCase;
 use Woof\System\FixedClock;
 
 /**
+ * HttpDateFormat のテストです。
+ *
+ * このテストクラスでは時刻解析の正確性を担保するため
+ * setUp() および tearDown() で一時的にシステムのデフォルトタイムゾーンを変更しています。
+ *
  * @coversDefaultClass Woof\Http\HttpDateFormat
  */
 class HttpDateFormatTest extends TestCase
 {
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
      * @var string
      */
     private $defaultTimezone;
 
     /**
-     * このテストではタイムゾーンを Asia/Tokyo に固定します。
+     * テストの実行環境に依存しないよう、システムのタイムゾーンを一時的に Asia/Tokyo に固定します。
      */
     public function setUp(): void
     {
@@ -33,7 +40,9 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
-     * @return HttpDateFormat
+     * テスト用の HttpDateFormat インスタンスを生成して返します。
+     *
+     * @return HttpDateFormat テスト用のインスタンス
      */
     private function createTestObject(): HttpDateFormat
     {
@@ -41,7 +50,9 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
-     * @param string $format
+     * 様々な HTTP-date 形式の文字列が、正しく同一の Unix time に変換されることを確認します。
+     *
+     * @param string $format 入力となる HTTP-date 文字列
      * @covers ::__construct
      * @covers ::parse
      * @covers ::<private>
@@ -54,7 +65,9 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
-     * @return array
+     * testParse() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestParse(): array
     {
@@ -66,6 +79,8 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
+     * サポートされていない形式の文字列を渡した場合に InvalidArgumentException がスローされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::parse
      * @covers ::<private>
@@ -78,8 +93,10 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
-     * @param int $time
-     * @param string $expected
+     * Unix time が RFC 822 準拠の HTTP-date 文字列に正しく変換されることを確認します。
+     *
+     * @param int $time 入力となる Unix time
+     * @param string $expected 期待される HTTP-date 文字列
      * @covers ::__construct
      * @covers ::format
      * @dataProvider provideTestFormat
@@ -91,7 +108,9 @@ class HttpDateFormatTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormat() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormat(): array
     {

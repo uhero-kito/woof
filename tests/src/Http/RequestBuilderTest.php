@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class RequestBuilderTest extends TestCase
 {
     /**
+     * ホスト名の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setHost
      * @covers ::getHost
@@ -22,6 +24,7 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * URI の設定と取得が正しく機能することを確認します。
      *
      * @covers ::__construct
      * @covers ::setUri
@@ -35,6 +38,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * パスの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setPath
      * @covers ::getPath
@@ -47,6 +52,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * スキームの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setScheme
      * @covers ::getScheme
@@ -59,6 +66,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * HTTP メソッドの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setMethod
      * @covers ::getMethod
@@ -71,6 +80,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * ヘッダーの設定と取得・セットされた EmptyField が無視されること・同名ヘッダーの上書きが正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setHeader
      * @covers ::getHeaderList
@@ -91,6 +102,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 単一の GET パラメータの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setQuery
      * @covers ::getQueryList
@@ -108,6 +121,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 配列による GET パラメータの一括設定 (マージ) が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setQueryList
      * @covers ::getQueryList
@@ -134,6 +149,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 単一の POST パラメータの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setPost
      * @covers ::getPostList
@@ -151,6 +168,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 配列による POST パラメータの一括設定 (マージ) が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setPostList
      * @covers ::getPostList
@@ -178,6 +197,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 単一の Cookie の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setCookie
      * @covers ::getCookieList
@@ -191,6 +212,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 配列による Cookie の一括設定 (マージ) が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setCookieList
      * @covers ::getCookieList
@@ -217,6 +240,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 添付ファイルの設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setUploadFile
      * @covers ::getUploadFileList
@@ -233,6 +258,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 必要な情報が設定された状態で、正しく Request オブジェクトが生成されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::build
      */
@@ -244,6 +271,8 @@ class RequestBuilderTest extends TestCase
     }
 
     /**
+     * 既存の Request オブジェクトをコンストラクタに渡すことで、その状態が正しくインポートされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::importRequest
      */

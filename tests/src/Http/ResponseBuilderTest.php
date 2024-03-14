@@ -13,6 +13,8 @@ use Woof\Http\Response\TextBody;
 class ResponseBuilderTest extends TestCase
 {
     /**
+     * Body の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setBody
      * @covers ::getBody
@@ -27,6 +29,8 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * Status の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setStatus
      * @covers ::getStatus
@@ -41,6 +45,8 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * Status が明示的に設定されているかどうかを正しく判定できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::hasStatus
      */
@@ -53,6 +59,7 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * ヘッダーの設定と取得・セットされた EmptyField が無視されること・同名ヘッダーの上書きが正しく機能することを確認します。
      *
      * @covers ::__construct
      * @covers ::setHeader
@@ -70,6 +77,8 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * Cookie の設定と取得が正しく機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setCookie
      * @covers ::getCookieList
@@ -88,6 +97,8 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * Response インスタンスが正しく構築されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::build
      */
@@ -98,6 +109,8 @@ class ResponseBuilderTest extends TestCase
     }
 
     /**
+     * 既存の Response オブジェクトをコンストラクタに渡すことで、その状態が正しくインポートされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::importResponse
      */

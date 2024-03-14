@@ -2,6 +2,9 @@
 
 namespace Woof\System;
 
+/**
+ * Variables インスタンスを構築するためのビルダークラスです。
+ */
 class VariablesBuilder
 {
     /**
@@ -46,6 +49,9 @@ class VariablesBuilder
      */
     private $files;
 
+    /**
+     * 各種変数を空の配列で初期化して VariablesBuilder インスタンスを生成します。
+     */
     public function __construct()
     {
         $this->server = [];
@@ -57,8 +63,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $server
-     * @return VariablesBuilder
+     * グローバル変数 $_SERVER に相当する配列を設定します。
+     *
+     * @param array $server $_SERVER に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setServer(array $server): self
     {
@@ -67,7 +75,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_SERVER に相当する配列を取得します。
+     *
+     * @return array 設定された $_SERVER に相当する配列
      */
     public function getServer(): array
     {
@@ -75,8 +85,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $env
-     * @return VariablesBuilder
+     * グローバル変数 $_ENV に相当する配列を設定します。
+     *
+     * @param array $env $_ENV に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setEnv(array $env): self
     {
@@ -85,7 +97,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_ENV に相当する配列を取得します。
+     *
+     * @return array 設定された $_ENV に相当する配列
      */
     public function getEnv(): array
     {
@@ -93,8 +107,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $get
-     * @return VariablesBuilder
+     * グローバル変数 $_GET に相当する配列を設定します。
+     *
+     * @param array $get $_GET に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setGet(array $get): self
     {
@@ -103,7 +119,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_GET に相当する配列を取得します。
+     *
+     * @return array 設定された $_GET に相当する配列
      */
     public function getGet(): array
     {
@@ -111,8 +129,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $post
-     * @return VariablesBuilder
+     * グローバル変数 $_POST に相当する配列を設定します。
+     *
+     * @param array $post $_POST に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setPost(array $post): self
     {
@@ -121,7 +141,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_POST に相当する配列を取得します。
+     *
+     * @return array 設定された $_POST に相当する配列
      */
     public function getPost(): array
     {
@@ -129,8 +151,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $cookie
-     * @return VariablesBuilder
+     * グローバル変数 $_COOKIE に相当する配列を設定します。
+     *
+     * @param array $cookie $_COOKIE に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setCookie(array $cookie): self
     {
@@ -139,7 +163,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_COOKIE に相当する配列を取得します。
+     *
+     * @return array 設定された $_COOKIE に相当する配列
      */
     public function getCookie(): array
     {
@@ -147,8 +173,10 @@ class VariablesBuilder
     }
 
     /**
-     * @param array $files
-     * @return VariablesBuilder
+     * グローバル変数 $_FILES に相当する配列を設定します。
+     *
+     * @param array $files $_FILES に相当する配列
+     * @return VariablesBuilder このオブジェクト自身
      */
     public function setFiles(array $files): self
     {
@@ -157,7 +185,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return array
+     * 設定された $_FILES に相当する配列を取得します。
+     *
+     * @return array 設定された $_FILES に相当する配列
      */
     public function getFiles(): array
     {
@@ -165,7 +195,9 @@ class VariablesBuilder
     }
 
     /**
-     * @return Variables
+     * 現在の設定をもとに Variables インスタンスを生成して返します。
+     *
+     * @return Variables 構築された Variables インスタンス
      */
     public function build(): Variables
     {

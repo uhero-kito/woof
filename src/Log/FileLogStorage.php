@@ -6,7 +6,9 @@ use InvalidArgumentException;
 use Woof\System\FileSystemException;
 
 /**
- * ファイルシステム上の所定のファイルにログを追記する LogStorage です。
+ * ファイルシステム上の所定のファイルにログを追記する LogStorage の実装です。
+ *
+ * 実際のアプリケーション稼働時において、サーバー内のローカルディスクにログを永続化する用途で使用されます。
  */
 class FileLogStorage implements LogStorage
 {
@@ -50,10 +52,10 @@ class FileLogStorage implements LogStorage
     /**
      * 指定された内容でログファイルに追記します。
      *
-     * @param string $content
-     * @param int $time
-     * @param int $level
-     * @return bool
+     * @param string $content 出力するログの内容
+     * @param int $time ログの発生時刻 (Unix time)
+     * @param int $level ログレベル
+     * @return bool 書き込みに成功した場合に true
      */
     public function write(string $content, int $time, int $level): bool
     {
@@ -63,8 +65,10 @@ class FileLogStorage implements LogStorage
     }
 
     /**
-     * @param int $time
-     * @return string
+     * 発生時刻からログファイル名を生成して返します。
+     *
+     * @param int $time ログの発生時刻 (Unix time)
+     * @return string 生成されたファイル名
      */
     private function formatFilename(int $time): string
     {

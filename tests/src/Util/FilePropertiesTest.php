@@ -14,11 +14,15 @@ use Woof\Util\JsonDecoder;
 class FilePropertiesTest extends TestCase
 {
     /**
+     * テストデータが配置されているディレクトリのパスです。
+     *
      * @var string
      */
     const TEST_DIR = TEST_DATA_DIR . "/Util/FileProperties/subjects";
 
     /**
+     * デフォルトの StringDecoder リストが正しく取得できることを確認します。
+     *
      * @covers ::getDefaultStringDecoderList
      */
     public function testGetDefaultStringDecoderList(): void
@@ -31,10 +35,13 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
+     * コンストラクタに指定したデコーダリスト内に無効なキーや値が含まれていた場合、
+     * それらが除外され、有効なデコーダのみが設定されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::<private>
      */
-    public function testConstructByInvalidDecoderList(): void
+    public function testConstructFiltersInvalidDecoders(): void
     {
         $je = JsonDecoder::getInstance();
         $ie = IniDecoder::getInstance();
@@ -54,7 +61,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @param string $key
+     * 不正なキー名を指定した場合に InvalidArgumentException がスローされることを確認します。
+     *
+     * @param string $key 不正なキー名
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -68,7 +77,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetFailByInvalidKey() のための不正なキー名のテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetFailByInvlidKey(): array
     {
@@ -79,8 +90,10 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param mixed $expected
+     * 単一階層の INI ファイルから正しい設定値が取得できることを確認します。
+     *
+     * @param string $key INI ファイル内のキー名
+     * @param mixed $expected 期待される設定値
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -93,7 +106,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetByIni() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetByIni(): array
     {
@@ -109,6 +124,8 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
+     * 存在しないキーを指定した場合に代替値 (デフォルト値) が返されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -121,8 +138,10 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param mixed $expected
+     * セクションを持つ INI ファイルから、ドット区切りで正しい設定値が取得できることを確認します。
+     *
+     * @param string $key 階層を含むキー名
+     * @param mixed $expected 期待される設定値
      * @dataProvider provideTestGetBySectionedIni
      */
     public function testGetBySectionedIni(string $key, $expected): void
@@ -132,7 +151,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetBySectionedIni() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetBySectionedIni(): array
     {
@@ -145,8 +166,10 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param mixed $expected
+     * JSON ファイルから正しい設定値が取得できることを確認します。
+     *
+     * @param string $key 階層を含むキー名
+     * @param mixed $expected 期待される設定値
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -159,7 +182,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetByJson() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetByJson(): array
     {
@@ -170,8 +195,10 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @param string $key
-     * @param mixed $expected
+     * ファイル名 (第一階層) を単体で指定した場合に、ファイル内の全ての設定値が配列として取得できることを確認します。
+     *
+     * @param string $key 取得するファイル名 (第一階層のキー)
+     * @param mixed $expected 期待される設定値の配列
      * @covers ::__construct
      * @covers ::get
      * @covers ::<private>
@@ -185,7 +212,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetByWholeFile() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetByWholeFile(): array
     {
@@ -203,9 +232,10 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
+     * 指定されたキー名がファイル内に存在するかどうかを正しく判定できることを確認します。
      *
-     * @param string $key
-     * @param bool $expected
+     * @param string $key 確認するキー名
+     * @param bool $expected 期待される判定結果
      * @covers ::__construct
      * @covers ::contains
      * @covers ::<private>
@@ -218,7 +248,9 @@ class FilePropertiesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testContains() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestContains(): array
     {

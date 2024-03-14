@@ -20,11 +20,15 @@ use Woof\Util\FileProperties;
 class DefaultEnvironmentBuilderTest extends TestCase
 {
     /**
+     * テストデータが配置されるディレクトリのパスです。
+     *
      * @var string
      */
     const TMP_DIR = TEST_DATA_DIR . "/DefaultEnvironmentBuilder/tmp";
 
     /**
+     * Config の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setConfig
      * @covers ::hasConfig
      * @covers ::getConfig
@@ -40,6 +44,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * ディレクトリパス指定による Config の設定が正しく機能することを確認します。
+     *
      * @covers ::setConfigDir
      * @covers ::getConfig
      */
@@ -53,6 +59,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * Resources の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setResources
      * @covers ::hasResources
      * @covers ::getResources
@@ -69,6 +77,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * ディレクトリパス指定による Resources の設定が正しく機能することを確認します。
+     *
      * @covers ::setResourcesDir
      * @covers ::getResources
      */
@@ -82,6 +92,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * DataStorage の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setDataStorage
      * @covers ::hasDataStorage
      * @covers ::getDataStorage
@@ -97,6 +109,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * ディレクトリパス指定による DataStorage の設定が正しく機能することを確認します。
+     *
      * @covers ::setDataStorageDir
      * @covers ::getDataStorage
      */
@@ -110,6 +124,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * Logger の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setLogger
      * @covers ::hasLogger
      * @covers ::getLogger
@@ -128,6 +144,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * 未設定の状態で getLogger() を呼び出した場合 NopLogger が返されることを確認します。
+     *
      * @covers ::getLogger
      */
     public function testGetLoggerFirst(): void
@@ -137,6 +155,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * Clock の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setClock
      * @covers ::getClock
      */
@@ -150,6 +170,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * Random の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setRandom
      * @covers ::getRandom
      */
@@ -163,6 +185,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * Variables の設定および取得が正しく機能することを確認します。
+     *
      * @covers ::setVariables
      * @covers ::hasVariables
      * @covers ::getVariables
@@ -179,6 +203,8 @@ class DefaultEnvironmentBuilderTest extends TestCase
     }
 
     /**
+     * DefaultEnvironment インスタンスが正しく生成されることを確認します。
+     *
      * @covers ::build
      */
     public function testBuild(): void

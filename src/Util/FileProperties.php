@@ -9,8 +9,10 @@ use Woof\Util\JsonDecoder;
 use Woof\Util\StringDecoder;
 
 /**
- * 特定のディレクトリの配下にある INI ファイルまたは JSON ファイルから設定値を取得する Properties の実装です。
- * このクラスは、保管されているファイル名から拡張子を除いたものを第 1 階層のキー名として扱います。
+ * 特定のディレクトリ内に配置されたファイル群から設定値を取得する Properties の実装です。
+ *
+ * INI や JSON などのファイルを読み込み、ファイル名 (拡張子を除く) を第 1 階層のキー名として扱います。
+ * 例えば "config/database.json" に保管されている値は "database.xxx" というキー名でアクセスできます。
  */
 class FileProperties implements Properties
 {
@@ -28,20 +30,25 @@ class FileProperties implements Properties
 
     /**
      * ファイルの有無をチェックするための変数です。
-     * contains() 内で、該当ファイルが存在しないにも関わらず true を返してしまうのを防ぐために使用します。
+     * contains() 内で、該当ファイルが存在しないことがあらかじめわかっている場合に、
+     * 続きの処理を打ち切って即座に false を返すために使用します。
      *
      * @var array
      */
     private $files;
 
     /**
+     * 拡張子と対応する StringDecoder の連想配列です。
+     *
      * @var StringDecoder[]
      */
     private $decList;
 
     /**
-     * @param string $dirname
-     * @param array $decoderList
+     * 読み込み対象のディレクトリを指定してオブジェクトを生成します。
+     *
+     * @param string $dirname 設定ファイルが保管されているディレクトリのパス
+     * @param array $decoderList 拡張子と対応する StringDecoder の連想配列 (省略時は INI および JSON 用のデコーダが適用されます)
      */
     public function __construct(string $dirname, array $decoderList = [])
     {
@@ -52,7 +59,11 @@ class FileProperties implements Properties
     }
 
     /**
-     * @return array
+     * デフォルトで適用されるファイル拡張子とデコーダの組み合わせを返します。
+     * 返り値の配列は "ini" および "json" をキーに持ち、それぞれ IniDecoder および JsonDecoder
+     * インスタンスを値として持ちます。
+     *
+     * @return array 拡張子をキーとする StringDecoder の連想配列
      */
     public static function getDefaultStringDecoderList(): array
     {
@@ -63,8 +74,8 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param array $decoderList
-     * @return array
+     * @param array $decoderList 指定されたデコーダリスト
+     * @return array フィルタリングされた有効なデコーダリスト (無効な場合はデフォルトの StringDecoder のリスト)
      */
     private function initDecoderList(array $decoderList): array
     {
@@ -80,8 +91,8 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param string $basename
-     * @return ArrayProperties
+     * @param string $basename 拡張子を除いたファイル名
+     * @return ArrayProperties 該当するファイルの設定値を保持する ArrayProperties
      */
     private function getProperties(string $basename): ArrayProperties
     {
@@ -89,8 +100,10 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param string $key
-     * @return bool
+     * 指定された名前の設定項目が存在するかどうかを調べます。
+     *
+     * @param string $key 確認したい設定項目のキー名
+     * @return bool 指定された設定項目が存在する場合に true
      */
     public function contains(string $key): bool
     {
@@ -103,9 +116,11 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param string $key
-     * @param mixed $defaultValue
-     * @return mixed
+     * 指定された名前の設定項目を取得します。
+     *
+     * @param string $key 取得したい設定項目のキー名
+     * @param mixed $defaultValue 設定が存在しない場合に返される代替値
+     * @return mixed 取得した設定値または代替値
      */
     public function get(string $key, $defaultValue = null)
     {
@@ -120,9 +135,11 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param string $name
-     * @return array
-     * @throws InvalidArgumentException
+     * キー名をファイルベース名と階層キーに分割します。
+     *
+     * @param string $name ドット区切りのキー名
+     * @return array [ファイルベース名, 階層キー] の配列
+     * @throws InvalidArgumentException キー名が不正な場合
      */
     private function parseSegments(string $name): array
     {
@@ -141,7 +158,9 @@ class FileProperties implements Properties
     }
 
     /**
-     * @param string $basename
+     * 対象のファイルを読み込み、内部にキャッシュします。
+     *
+     * @param string $basename 拡張子を除いたファイル名
      */
     private function initBasename(string $basename): void
     {

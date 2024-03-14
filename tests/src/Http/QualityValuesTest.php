@@ -11,9 +11,11 @@ use PHPUnit\Framework\TestCase;
 class QualityValuesTest extends TestCase
 {
     /**
+     * 無効な q-value 配列が渡された場合に InvalidArgumentException がスローされることを確認します。
+     *
+     * @param array $qvalueList テスト用の無効な配列
      * @covers ::__construct
      * @covers ::<private>
-     * @expectedException InvalidArgumentException
      * @dataProvider provideTestConstructFailByInvalidQvalueList
      */
     public function testConstructFailByInvalidQvalueList(array $qvalueList): void
@@ -23,7 +25,9 @@ class QualityValuesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testConstructFailByInvalidQvalueList() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestConstructFailByInvalidQvalueList(): array
     {
@@ -37,8 +41,10 @@ class QualityValuesTest extends TestCase
     }
 
     /**
-     * @param array $qvalueList
-     * @param string $expected
+     * 配列データが、カンマ区切りおよび q= の形式で正しく文字列化されることを確認します。
+     *
+     * @param array $qvalueList 入力となる配列
+     * @param string $expected 期待される出力文字列
      * @covers ::__construct
      * @covers ::format
      * @dataProvider provideTestFormat
@@ -50,7 +56,9 @@ class QualityValuesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testFormat() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestFormat(): array
     {
@@ -61,6 +69,8 @@ class QualityValuesTest extends TestCase
     }
 
     /**
+     * 設定したヘッダー名が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getName
      */
@@ -71,6 +81,10 @@ class QualityValuesTest extends TestCase
     }
 
     /**
+     * q-value の降順でソートされ、かつ正しく丸められた値が配列として取得できることを確認します。
+     *
+     * @param array $qvalueList 入力となる配列
+     * @param array $expected ソート・整形済みの期待される配列
      * @covers ::__construct
      * @covers ::<private>
      * @covers ::getValue
@@ -83,7 +97,9 @@ class QualityValuesTest extends TestCase
     }
 
     /**
-     * @return array
+     * testGetValue() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
      */
     public function provideTestGetValue(): array
     {

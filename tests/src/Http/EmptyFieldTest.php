@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class EmptyFieldTest extends TestCase
 {
     /**
+     * 空文字列が返されることを確認します。
+     *
      * @covers ::getName
      */
     public function testGetName()
@@ -19,6 +21,8 @@ class EmptyFieldTest extends TestCase
     }
 
     /**
+     * null が返されることを確認します。
+     *
      * @covers ::getValue
      */
     public function testGetValue()
@@ -28,6 +32,8 @@ class EmptyFieldTest extends TestCase
     }
 
     /**
+     * 空文字列が返されることを確認します。
+     *
      * @covers ::format
      */
     public function testFormat()
@@ -37,6 +43,8 @@ class EmptyFieldTest extends TestCase
     }
 
     /**
+     * 常に同一のインスタンスが返されることを確認します。
+     *
      * @covers ::getInstance
      */
     public function testGetInstance()

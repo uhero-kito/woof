@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class NullResourcesTest extends TestCase
 {
     /**
+     * 同一のインスタンスが返されることを確認します。
+     *
      * @covers ::getInstance
      */
     public function testGetInstance(): void
@@ -21,6 +23,8 @@ class NullResourcesTest extends TestCase
     }
 
     /**
+     * リソースの存在確認に対して、常に false が返されることを確認します。
+     *
      * @covers ::contains
      */
     public function testContains(): void
@@ -30,6 +34,8 @@ class NullResourcesTest extends TestCase
     }
 
     /**
+     * リソースの取得処理において、常に ResourceNotFoundException がスローされることを確認します。
+     *
      * @covers ::get
      */
     public function testGet(): void

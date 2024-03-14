@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class VariablesBuilderTest extends TestCase
 {
     /**
+     * $_SERVER に相当する配列の setter と getter およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setServer
      * @covers ::getServer
@@ -27,6 +29,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * $_ENV に相当する配列の setter と getter およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setEnv
      * @covers ::getEnv
@@ -43,6 +47,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * $_GET に相当する配列の setter と getter およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setGet
      * @covers ::getGet
@@ -59,6 +65,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * $_POST に相当する配列の setter と getter、およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setPost
      * @covers ::getPost
@@ -75,6 +83,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * $_COOKIE に相当する配列の setter と getter およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setCookie
      * @covers ::getCookie
@@ -91,6 +101,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * $_FILES に相当する配列の setter と getter およびメソッドチェーンが機能することを確認します。
+     *
      * @covers ::__construct
      * @covers ::setFiles
      * @covers ::getFiles
@@ -119,6 +131,8 @@ class VariablesBuilderTest extends TestCase
     }
 
     /**
+     * build() メソッドを呼び出すことで Variables インスタンスが生成されることを確認します。
+     *
      * @covers ::__construct
      * @covers ::build
      */

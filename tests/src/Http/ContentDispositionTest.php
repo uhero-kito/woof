@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 class ContentDispositionTest extends TestCase
 {
     /**
+     * 常に "Content-Disposition" というヘッダー名が取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getName
      */
@@ -20,6 +22,8 @@ class ContentDispositionTest extends TestCase
     }
 
     /**
+     * 設定したファイル名 (未指定の場合は空文字列) が正しく取得できることを確認します。
+     *
      * @covers ::__construct
      * @covers ::getValue
      */
@@ -32,6 +36,8 @@ class ContentDispositionTest extends TestCase
     }
 
     /**
+     * ファイル名の有無に応じて適切にフォーマットされることと、ファイル名が正しく URL エンコードされることを確認します。
+     *
      * @covers ::__construct
      * @covers ::format
      */
