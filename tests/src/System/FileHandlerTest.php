@@ -223,4 +223,42 @@ class FileHandlerTest extends TestCase
         $this->assertSame([], $obj->getFiles("notfound"));
         $this->assertSame([], $obj->getFiles("getfiles01/file1.txt"));
     }
+
+    /**
+     * 指定したファイルの最終更新日時が取得できることと、存在しない場合やディレクトリの場合は 0 が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getModifiedTime
+     */
+    public function testGetModifiedTime(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $expected   = filemtime("{$tmpdir}/{$targetFile}");
+        $this->assertSame($expected, $obj->getModifiedTime($targetFile));
+        $this->assertSame(0, $obj->getModifiedTime("notfound.txt"));
+        $this->assertSame(0, $obj->getModifiedTime("test01"));
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が上書きできることと、存在しない場合やディレクトリの場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::setModifiedTime
+     */
+    public function testSetModifiedTime(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $targetTime = 1600000000;
+        $this->assertTrue($obj->setModifiedTime($targetFile, $targetTime));
+        clearstatcache(true, "{$tmpdir}/{$targetFile}");
+        $this->assertSame($targetTime, filemtime("{$tmpdir}/{$targetFile}"));
+        $this->assertFalse($obj->setModifiedTime("notfound.txt", $targetTime));
+        $this->assertFalse($obj->setModifiedTime("test01", $targetTime));
+    }
 }

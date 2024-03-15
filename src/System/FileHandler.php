@@ -198,4 +198,33 @@ class FileHandler
         }
         return $files;
     }
+
+    /**
+     * 指定されたファイルの最終更新日時を設定 (上書き) します。
+     *
+     * もしも指定されたパスが存在しないか、またはディレクトリだった場合は false を返します。
+     *
+     * @param string $path 対象となるファイルの相対パス
+     * @param int $time 設定する最終更新日時 (Unix time)
+     * @return bool 更新に成功した場合に true、対象がファイルではない場合や失敗した場合は false
+     */
+    public function setModifiedTime(string $path, int $time): bool
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? touch($fullpath, $time) : false;
+    }
+
+    /**
+     * 指定されたファイルの最終更新日時を Unix time として取得します。
+     *
+     * もしも指定されたパスが存在しないか、またはディレクトリだった場合は 0 を返します。
+     *
+     * @param string $path 取得したいファイルの相対パス
+     * @return int 最終更新日時の Unix time (存在しない場合やファイルではない場合は 0)
+     */
+    public function getModifiedTime(string $path): int
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? (int) filemtime($fullpath) : 0;
+    }
 }
