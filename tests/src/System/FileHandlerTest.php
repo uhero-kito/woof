@@ -193,4 +193,34 @@ class FileHandlerTest extends TestCase
         $expected = "first line" . PHP_EOL . "second line" . PHP_EOL . "third line" . PHP_EOL;
         $this->assertSame($expected, file_get_contents("{$tmpdir}/test02/test.log"));
     }
+
+    /**
+     * 指定したディレクトリ配下のファイル一覧が正しく取得できることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getFiles
+     * @covers ::<private>
+     */
+    public function testGetFiles(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $expectedNonRecursive = [
+            "getfiles01/file1.txt",
+            "getfiles01/file2.txt",
+        ];
+        $this->assertSame($expectedNonRecursive, $obj->getFiles("getfiles01"));
+        $this->assertSame($expectedNonRecursive, $obj->getFiles("getfiles01/"));
+
+        $expectedRecursive = [
+            "getfiles01/file1.txt",
+            "getfiles01/file2.txt",
+            "getfiles01/subdir/file3.txt",
+        ];
+        $this->assertSame($expectedRecursive, $obj->getFiles("getfiles01", true));
+
+        $this->assertSame([], $obj->getFiles("notfound"));
+        $this->assertSame([], $obj->getFiles("getfiles01/file1.txt"));
+    }
 }

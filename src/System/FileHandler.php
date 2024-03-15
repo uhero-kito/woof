@@ -2,6 +2,7 @@
 
 namespace Woof\System;
 
+use FilesystemIterator;
 use InvalidArgumentException;
 
 /**
@@ -150,5 +151,51 @@ class FileHandler
     public function contains(string $path): bool
     {
         return is_file($this->formatFullpath($path));
+    }
+
+    /**
+     * 指定されたサブディレクトリ配下のファイルパス一覧を取得します。
+     *
+     * @param string $path サブディレクトリの相対パス。空文字列または "/" の場合はベースディレクトリ直下を対象とします。
+     * @param bool $recursive true を指定した場合は、サブディレクトリ配下も再帰的に取得します。
+     * @return string[] ベースディレクトリを起点とした相対パスの配列
+     */
+    public function getFiles(string $path = "", bool $recursive = false): array
+    {
+        $cleanPath = trim($path, "/");
+        $targetDir = (strlen($cleanPath) > 0) ? $this->formatFullpath($cleanPath) : $this->dirname;
+        if (!is_dir($targetDir)) {
+            return [];
+        }
+
+        $files = $this->scanFiles($targetDir, $cleanPath, $recursive);
+        sort($files);
+        return $files;
+    }
+
+    /**
+     * 指定されたディレクトリ内のファイルを走査し、相対パスの配列を取得します。
+     *
+     * @param string $dirname 走査対象のディレクトリの絶対パス
+     * @param string $prefix ベースディレクトリからの相対パス
+     * @param bool $recursive 再帰的に取得するかどうかをあらわすフラグ
+     * @return string[] ファイルの相対パスの配列
+     */
+    private function scanFiles(string $dirname, string $prefix, bool $recursive): array
+    {
+        $files    = [];
+        $iterator = new FilesystemIterator($dirname, FilesystemIterator::SKIP_DOTS);
+
+        foreach ($iterator as $i) {
+            $filename = $i->getFilename();
+            $nextPath = (strlen($prefix) > 0) ? "{$prefix}/{$filename}" : $filename;
+
+            if ($i->isDir() && $recursive) {
+                $files = array_merge($files, $this->scanFiles($i->getPathname(), $nextPath, $recursive));
+            } elseif ($i->isFile()) {
+                $files[] = $nextPath;
+            }
+        }
+        return $files;
     }
 }
