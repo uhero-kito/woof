@@ -88,4 +88,17 @@ class FileDataStorage implements DataStorage
     {
         return $this->handler->formatFullpath($path);
     }
+
+    /**
+     * 引数で指定されたイニシャル・セグメントに属するすべてのキーを取得します。
+     * 引数に空文字列を指定した場合 (または引数を省略した場合) は、この DataStorage が保持するすべてのキーを取得します。
+     *
+     * @param string $prefix イニシャル・セグメント
+     * @return string[] 該当するすべてのキーの配列
+     */
+    public function getKeys(string $prefix = ""): array
+    {
+        $cleanPrefix = trim(preg_replace("/\\/{2,}/", "/", $prefix), "/");
+        return $this->handler->getFiles($cleanPrefix, true);
+    }
 }

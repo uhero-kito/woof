@@ -112,4 +112,57 @@ class FileDataStorageTest extends TestCase
         $obj    = new FileDataStorage($tmpdir);
         $this->assertSame("{$tmpdir}/hoge/index.html", $obj->formatPath("hoge/index.html"));
     }
+
+    /**
+     * イニシャル・セグメントに基づいて再帰的にキーを取得できることと、
+     * セグメント単位での一致となること (前方一致による誤検知がないこと) を確認します。
+     *
+     * @param string $prefix イニシャル・セグメント
+     * @param array $expected 期待されるキーの配列
+     * @covers ::__construct
+     * @covers ::getKeys
+     * @dataProvider provideTestGetKeys
+     */
+    public function testGetKeys(string $prefix, array $expected): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileDataStorage($tmpdir);
+        $this->assertSame($expected, $obj->getKeys($prefix));
+    }
+
+    /**
+     * testGetKeys() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
+     */
+    public function provideTestGetKeys(): array
+    {
+        $expectedSub = [
+            "getkeys01/sub/entry1.txt",
+            "getkeys01/sub/entry2.txt",
+            "getkeys01/sub/sub2/entry3.txt",
+            "getkeys01/sub/sub2/entry4.txt",
+        ];
+        $expectedAll = [
+            ".gitignore",
+            "basefile.txt",
+            "getkeys01/dummy/entry0.txt",
+            "getkeys01/sample.txt",
+            "getkeys01/sub/entry1.txt",
+            "getkeys01/sub/entry2.txt",
+            "getkeys01/sub/sub2/entry3.txt",
+            "getkeys01/sub/sub2/entry4.txt",
+            "getkeys01/submarine.txt",
+            "getkeys01/subway.txt",
+            "test01/sample.txt",
+        ];
+
+        return [
+            ["getkeys01/sub", $expectedSub],
+            ["getkeys01/sample.txt", []],
+            ["getkeys01/notfound", []],
+            ["///getkeys01//sub///", $expectedSub],
+            ["", $expectedAll],
+        ];
+    }
 }
