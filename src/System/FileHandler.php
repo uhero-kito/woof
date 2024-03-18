@@ -227,4 +227,16 @@ class FileHandler
         $fullpath = $this->formatFullpath($path);
         return is_file($fullpath) ? (int) filemtime($fullpath) : 0;
     }
+
+    /**
+     * 指定されたパスのファイルを削除します。
+     *
+     * @param string $path 対象となるファイルの相対パス
+     * @return bool 削除に成功した場合に true、対象がファイルではない場合や失敗した場合は false
+     */
+    public function remove(string $path): bool
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? unlink($fullpath) : false;
+    }
 }

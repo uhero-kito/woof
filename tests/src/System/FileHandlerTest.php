@@ -261,4 +261,22 @@ class FileHandlerTest extends TestCase
         $this->assertFalse($obj->setModifiedTime("notfound.txt", $targetTime));
         $this->assertFalse($obj->setModifiedTime("test01", $targetTime));
     }
+
+    /**
+     * 指定したファイルが削除できることと、存在しない場合やディレクトリの場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::remove
+     */
+    public function testRemove(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $this->assertTrue($obj->remove($targetFile));
+        $this->assertFileDoesNotExist("{$tmpdir}/{$targetFile}");
+        $this->assertFalse($obj->remove("notfound.txt"));
+        $this->assertFalse($obj->remove("test01"));
+    }
 }
