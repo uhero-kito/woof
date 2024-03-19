@@ -165,4 +165,41 @@ class FileDataStorageTest extends TestCase
             ["", $expectedAll],
         ];
     }
+
+    /**
+     * 指定したファイルの最終更新日時が取得できることと、存在しない場合は 0 が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getModifiedTime
+     */
+    public function testGetModifiedTime(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetFile = "{$tmpdir}/test01/sample.txt";
+        $expected   = filemtime($targetFile);
+        $this->assertSame($expected, $obj->getModifiedTime("test01/sample.txt"));
+        $this->assertSame(0, $obj->getModifiedTime("test01/notfound.txt"));
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が正しく上書きされることと、存在しない場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::setModifiedTime
+     * @covers ::getModifiedTime
+     */
+    public function testSetModifiedTime(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetKey  = "test01/sample.txt";
+        $targetTime = 1600000000;
+        $this->assertTrue($obj->setModifiedTime($targetKey, $targetTime));
+        clearstatcache(true, "{$tmpdir}/{$targetKey}");
+        $this->assertSame($targetTime, $obj->getModifiedTime($targetKey));
+        $this->assertFalse($obj->setModifiedTime("test01/notfound.txt", $targetTime));
+    }
 }

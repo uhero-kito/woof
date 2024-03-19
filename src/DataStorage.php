@@ -62,4 +62,29 @@ interface DataStorage
      * @return string[] 該当するすべてのキーの配列。指定されたイニシャル・セグメントを持つキーが存在しないか、指定された文字列自体がキーだった場合は空の配列を返します
      */
     public function getKeys(string $prefix = ""): array;
+
+    /**
+     * 指定されたキーに相当するデータの最終更新日時を取得します。
+     *
+     * 指定されたキーが存在しない場合や、
+     * この DataStorage 実装が最終更新日時をサポートしていない場合は 0 を返します。
+     *
+     * @param string $key 取得したいデータのキー
+     * @return int 最終更新日時の Unix time (存在しないか、サポートしていない場合は 0)
+     */
+    public function getModifiedTime(string $key): int;
+
+    /**
+     * 指定されたキーに相当するデータの最終更新日時を設定 (上書き) します。
+     * 成功した場合は true、下記の理由などにより失敗した場合は false を返します。
+     *
+     * - 指定されたキーのデータが存在しない場合
+     * - この DataStorage 実装が最終更新日時をサポートしていない場合
+     * - ファイルのアクセス権限などの問題により更新できない場合
+     *
+     * @param string $key 対象となるデータのキー
+     * @param int $time 設定する最終更新日時 (Unix time)
+     * @return bool 更新に成功した場合のみ true
+     */
+    public function setModifiedTime(string $key, int $time): bool;
 }
