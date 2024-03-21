@@ -87,4 +87,17 @@ interface DataStorage
      * @return bool 更新に成功した場合のみ true
      */
     public function setModifiedTime(string $key, int $time): bool;
+
+    /**
+     * 指定されたキーに相当するデータを削除します。
+     * 成功した場合は true、下記の理由などにより失敗した場合は false を返します。
+     *
+     * - 指定されたキーのデータが存在しない場合
+     * - この DataStorage 実装がデータの削除をサポートしていない場合
+     * - アクセス権限などの問題により削除できない場合
+     *
+     * @param string $key 対象となるデータのキー
+     * @return bool 削除に成功した場合に true
+     */
+    public function remove(string $key): bool;
 }

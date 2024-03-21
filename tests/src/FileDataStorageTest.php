@@ -202,4 +202,21 @@ class FileDataStorageTest extends TestCase
         $this->assertSame($targetTime, $obj->getModifiedTime($targetKey));
         $this->assertFalse($obj->setModifiedTime("test01/notfound.txt", $targetTime));
     }
+
+    /**
+     * 指定したデータが正しく削除されることと、存在しない場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::remove
+     */
+    public function testRemove(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetKey  = "test01/sample.txt";
+        $this->assertTrue($obj->remove($targetKey));
+        $this->assertFileDoesNotExist("{$tmpdir}/{$targetKey}");
+        $this->assertFalse($obj->remove("test01/notfound.txt"));
+    }
 }

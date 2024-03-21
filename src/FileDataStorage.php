@@ -126,4 +126,16 @@ class FileDataStorage implements DataStorage
     {
         return $this->handler->setModifiedTime($path, $time);
     }
+
+    /**
+     * 指定されたキーに相当するデータを削除します。
+     * 存在しない場合や、権限などの理由で削除に失敗した場合は false を返します。
+     *
+     * @param string $key 対象となるファイルの相対パス (キー)
+     * @return bool 削除に成功した場合のみ true
+     */
+    public function remove(string $key): bool
+    {
+        return $this->handler->remove($key);
+    }
 }
