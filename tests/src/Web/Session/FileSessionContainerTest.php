@@ -230,7 +230,7 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * ディレクトリ削除等により保存に失敗した場合、false が返されエラーログが記録されることを確認します。
+     * 保存先のパスがディレクトリである等の理由により保存に失敗した場合、false が返されエラーログが記録されることを確認します。
      *
      * @covers ::save
      * @covers ::<private>
@@ -239,15 +239,17 @@ class FileSessionContainerTest extends TestCase
     {
         set_error_handler(function () {});
 
-        // 存在しないディレクトリをセッションの保存先とする FileSessionContainer を作成します
-        $delDir = "{$this->tmpdir}/deldir";
-        mkdir($delDir);
-        $obj    = new FileSessionContainer($delDir, $this->getLogger());
-        rmdir($delDir);
+        // FileHandler による保存を失敗させるため、対象となるセッションファイルと同名のディレクトリを作成します
+        $targetPath = "{$this->tmpdir}/sess_1234567890abcdef";
+        if (file_exists($targetPath)) {
+            unlink($targetPath);
+        }
+        mkdir($targetPath);
 
+        $obj         = new FileSessionContainer($this->tmpdir, $this->getLogger());
         $result      = $obj->save("1234567890abcdef", ["hoge" => 456, "fuga" => "asdf", "piyo" => true]);
         $this->assertFalse($result);
-        $expectedLog = "[2017-07-14 14:26:40][ALERT] Failed to save session to '{$delDir}/sess_1234567890abcdef'";
+        $expectedLog = "[2017-07-14 14:26:40][ALERT] Failed to save session to 'sess_1234567890abcdef'";
         $this->assertSame($expectedLog, trim(file_get_contents("{$this->logdir}/app-20170714.log")));
 
         restore_error_handler();
