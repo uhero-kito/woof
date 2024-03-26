@@ -36,6 +36,13 @@ class FileSessionContainer implements SessionContainer
     private $clock;
 
     /**
+     * セッション処理の共通ロジックを提供するヘルパーです。
+     *
+     * @var SessionContainerHelper
+     */
+    private $helper;
+
+    /**
      * セッションを保存するディレクトリ名を指定して FileSessionContainer インスタンスを生成します。
      *
      * @param string $dirname セッションファイルを保存するディレクトリ
@@ -47,6 +54,7 @@ class FileSessionContainer implements SessionContainer
         $this->handler = new FileHandler($dirname);
         $this->logger  = $logger ?? Logger::getNopLogger();
         $this->clock   = $clock ?? DefaultClock::getInstance();
+        $this->helper  = new SessionContainerHelper();
     }
 
     /**
@@ -61,11 +69,7 @@ class FileSessionContainer implements SessionContainer
         $now   = $this->clock->getTime();
         $count = 0;
 
-        foreach ($files as $file) {
-            if (substr(basename($file), 0, 5) !== "sess_") {
-                continue;
-            }
-
+        foreach ($this->helper->filterSessionKeys($files) as $file) {
             $limit = $this->handler->getModifiedTime($file) + $maxAge;
             if (0 < $limit && $limit < $now) {
                 $this->handler->remove($file) && $count++;
@@ -128,29 +132,13 @@ class FileSessionContainer implements SessionContainer
     public function save(string $id, array $data): bool
     {
         $file       = "sess_{$id}";
-        $serialized = $this->serialize($data);
+        $serialized = $this->helper->serialize($data);
         $result     = $this->handler->put($file, $serialized);
 
         if (!$result) {
             $this->logger->alert("Failed to save session to '{$file}'");
         }
 
-        return $result;
-    }
-
-    /**
-     * 連想配列を独自のセッションフォーマット文字列にシリアライズします。
-     *
-     * @param array $data シリアライズ対象の連想配列
-     * @return string シリアライズされた文字列
-     */
-    private function serialize(array $data): string
-    {
-        $result = "";
-        foreach ($data as $key => $value) {
-            $serialized = serialize($value);
-            $result     .= "{$key}|{$serialized}";
-        }
         return $result;
     }
 }

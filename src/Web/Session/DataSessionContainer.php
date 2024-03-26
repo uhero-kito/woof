@@ -44,6 +44,13 @@ class DataSessionContainer implements SessionContainer
     private $clock;
 
     /**
+     * セッション処理の共通ロジックを提供するヘルパーです。
+     *
+     * @var SessionContainerHelper
+     */
+    private $helper;
+
+    /**
      * DataStorage とイニシャル・セグメントなどを指定して DataSessionContainer インスタンスを生成します。
      *
      * @param DataStorage $storage セッションデータを保存する DataStorage
@@ -57,6 +64,7 @@ class DataSessionContainer implements SessionContainer
         $this->prefix  = trim($prefix, "/");
         $this->logger  = $logger ?? Logger::getNopLogger();
         $this->clock   = $clock ?? DefaultClock::getInstance();
+        $this->helper  = new SessionContainerHelper();
     }
 
     /**
@@ -71,12 +79,7 @@ class DataSessionContainer implements SessionContainer
         $now   = $this->clock->getTime();
         $count = 0;
 
-        foreach ($keys as $key) {
-            $basename = basename($key);
-            if (substr($basename, 0, 5) !== "sess_") {
-                continue;
-            }
-
+        foreach ($this->helper->filterSessionKeys($keys) as $key) {
             $limit = $this->storage->getModifiedTime($key) + $maxAge;
             if ($limit < $now) {
                 $this->storage->remove($key) && $count++;
@@ -152,29 +155,13 @@ class DataSessionContainer implements SessionContainer
     public function save(string $id, array $data): bool
     {
         $key        = $this->formatKey($id);
-        $serialized = $this->serialize($data);
+        $serialized = $this->helper->serialize($data);
         $result     = $this->storage->put($key, $serialized);
 
         if (!$result) {
             $this->logger->alert("Failed to save session to '{$key}'");
         }
 
-        return $result;
-    }
-
-    /**
-     * 連想配列を独自のセッションフォーマット文字列にシリアライズします。
-     *
-     * @param array $data シリアライズ対象の連想配列
-     * @return string シリアライズされた文字列
-     */
-    private function serialize(array $data): string
-    {
-        $result = "";
-        foreach ($data as $key => $value) {
-            $serialized = serialize($value);
-            $result     .= "{$key}|{$serialized}";
-        }
         return $result;
     }
 }
