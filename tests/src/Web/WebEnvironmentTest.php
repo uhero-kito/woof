@@ -15,6 +15,7 @@ use Woof\Log\Logger;
 use Woof\Log\LoggerBuilder;
 use Woof\System\VariablesBuilder;
 use Woof\Util\ArrayProperties;
+use Woof\Web\Session\DataSessionContainer;
 use Woof\Web\Session\FileSessionContainer;
 use Woof\Web\Session\SessionStorage;
 use Woof\Web\Session\SessionStorageBuilder;
@@ -177,7 +178,7 @@ class WebEnvironmentTest extends TestCase
         $ss1 = (new StandardSessionStorageFactory())
             ->create(new Config(new ArrayProperties([])));
         $ss2 = (new SessionStorageBuilder())
-            ->setSessionContainer(new FileSessionContainer("{$tmpdir}/data01/sess01", $logger))
+            ->setSessionContainer(new DataSessionContainer(new FileDataStorage("{$tmpdir}/data01"), "sess01", $logger))
             ->setKey("testkey")
             ->setMaxAge(900)
             ->setGcProbability(0.125)
