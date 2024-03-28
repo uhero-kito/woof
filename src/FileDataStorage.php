@@ -88,4 +88,54 @@ class FileDataStorage implements DataStorage
     {
         return $this->handler->formatFullpath($path);
     }
+
+    /**
+     * 引数で指定されたイニシャル・セグメントに属するすべてのキーを取得します。
+     * 引数に空文字列を指定した場合 (または引数を省略した場合) は、この DataStorage が保持するすべてのキーを取得します。
+     *
+     * @param string $prefix イニシャル・セグメント
+     * @return string[] 該当するすべてのキーの配列
+     */
+    public function getKeys(string $prefix = ""): array
+    {
+        $cleanPrefix = trim(preg_replace("/\\/{2,}/", "/", $prefix), "/");
+        return $this->handler->getFiles($cleanPrefix, true);
+    }
+
+    /**
+     * 指定されたパスのファイルの最終更新日時を取得します。
+     * ファイルが存在しない場合や、ディレクトリである場合は 0 を返します。
+     *
+     * @param string $path 取得したいファイルの相対パス (キー)
+     * @return int 最終更新日時の Unix time (存在しないか取得できない場合は 0)
+     */
+    public function getModifiedTime(string $path): int
+    {
+        return $this->handler->getModifiedTime($path);
+    }
+
+    /**
+     * 指定されたパスのファイルの最終更新日時を設定 (上書き) します。
+     * ファイルが存在しない場合や、権限などの理由で更新に失敗した場合は false を返します。
+     *
+     * @param string $path 対象となるファイルの相対パス (キー)
+     * @param int $time 設定する最終更新日時 (Unix time)
+     * @return bool 更新に成功した場合のみ true
+     */
+    public function setModifiedTime(string $path, int $time): bool
+    {
+        return $this->handler->setModifiedTime($path, $time);
+    }
+
+    /**
+     * 指定されたキーに相当するデータを削除します。
+     * 存在しない場合や、権限などの理由で削除に失敗した場合は false を返します。
+     *
+     * @param string $key 対象となるファイルの相対パス (キー)
+     * @return bool 削除に成功した場合のみ true
+     */
+    public function remove(string $key): bool
+    {
+        return $this->handler->remove($key);
+    }
 }

@@ -10,6 +10,7 @@ use Woof\Log\FileLogStorage;
 use Woof\Log\Logger;
 use Woof\Log\LoggerBuilder;
 use Woof\Util\ArrayProperties;
+use Woof\Web\Session\DataSessionContainer;
 use Woof\Web\Session\FileSessionContainer;
 use Woof\Web\Session\SessionStorage;
 use Woof\Web\Session\SessionStorageBuilder;
@@ -89,47 +90,47 @@ class StandardSessionStorageFactoryTest extends TestCase
     }
 
     /**
-     * 設定の dirname に応じて、正しいセッション保存先パスが解決されることを確認します。
+     * DataStorage が指定されている場合、設定の dirname に応じて DataSessionContainer が作成され、
+     * 正しいイニシャル・セグメントが解決されることを確認します。
      *
      * @param array $arr 入力となる設定配列
-     * @param string $expected 期待される保存先パス
+     * @param string $expectedPrefix 期待されるイニシャル・セグメント
      * @covers ::create
-     * @covers ::getSessionSavePath
-     * @dataProvider provideTestGetSessionSavePath
+     * @covers ::createSessionContainer
+     * @dataProvider provideTestCreateSessionContainerWithDataStorage
      */
-    public function testGetSessionSavePath(array $arr, string $expected): void
+    public function testCreateSessionContainerWithDataStorage(array $arr, string $expectedPrefix): void
     {
         $ss = $this->createStorageByArray($arr);
         $c1 = $ss->getSessionContainer();
-        $c2 = new FileSessionContainer($expected, $this->getTestLogger());
+        $c2 = new DataSessionContainer(new FileDataStorage(self::TMP_DIR), $expectedPrefix, $this->getTestLogger());
         $this->assertEquals($c2, $c1);
     }
 
     /**
-     * testGetSessionSavePath() のためのテストデータを提供します。
+     * testCreateSessionContainerWithDataStorage() のためのテストデータを提供します。
      *
      * @return array テストデータの配列
      */
-    public function provideTestGetSessionSavePath(): array
+    public function provideTestCreateSessionContainerWithDataStorage(): array
     {
-        $tmp  = self::TMP_DIR;
         $arr1 = [];
         $arr2 = ["dirname" => "test01"];
         $arr3 = ["dirname" => [1, 2, 3]];
         return [
-            [$arr1, "{$tmp}/sessions"],
-            [$arr2, "{$tmp}/test01"],
-            [$arr3, "{$tmp}/sessions"],
+            [$arr1, "sessions"],
+            [$arr2, "test01"],
+            [$arr3, "sessions"],
         ];
     }
 
     /**
-     * FileDataStorage を利用しない場合、デフォルトのセッション保存先パスが利用されることを確認します。
+     * DataStorage を利用しない場合、デフォルトのセッション保存先パスを用いて FileSessionContainer が利用されることを確認します。
      *
      * @covers ::create
-     * @covers ::getSessionSavePath
+     * @covers ::createSessionContainer
      */
-    public function testGetSessionSavePathWithoutData(): void
+    public function testCreateSessionContainerWithoutDataStorage(): void
     {
         $obj  = new StandardSessionStorageFactory();
         $prop = new ArrayProperties(["session" => ["dirname" => "test02"]]);
@@ -256,11 +257,8 @@ class StandardSessionStorageFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $testdir = self::TMP_DIR . "/test/dir1";
-        mkdir($testdir, 0777, true);
-
         $expected = (new SessionStorageBuilder())
-            ->setSessionContainer(new FileSessionContainer($testdir, $this->getTestLogger()))
+            ->setSessionContainer(new DataSessionContainer(new FileDataStorage(self::TMP_DIR), "/test/dir1", $this->getTestLogger()))
             ->setKey("testkey")
             ->setMaxAge(900)
             ->setGcProbability(0.125)

@@ -2,23 +2,24 @@
 
 namespace Woof\Web\Session;
 
-use DirectoryIterator;
 use Woof\Log\Logger;
 use Woof\System\Clock;
 use Woof\System\DefaultClock;
-use Woof\System\FileSystemException;
+use Woof\System\FileHandler;
 
 /**
  * ファイルシステムを使用してセッションデータを管理する SessionContainer の実装です。
+ *
+ * 指定されたディレクトリ配下に対して、セッションデータの読み書きや、有効期限切れに伴う破棄などの一連の管理を行います。
  */
 class FileSessionContainer implements SessionContainer
 {
     /**
-     * セッションファイルを保存するディレクトリのパスです。
+     * セッションデータの保存先ディレクトリを操作する FileHandler です。
      *
-     * @var string
+     * @var FileHandler
      */
-    private $dirname;
+    private $handler;
 
     /**
      * エラー発生時などに情報を出力するための Logger オブジェクトです。
@@ -35,22 +36,25 @@ class FileSessionContainer implements SessionContainer
     private $clock;
 
     /**
-     * 保存先ディレクトリなどを指定して FileSessionContainer インスタンスを生成します。
+     * セッション処理の共通ロジックを提供するヘルパーです。
+     *
+     * @var SessionContainerHelper
+     */
+    private $helper;
+
+    /**
+     * セッションを保存するディレクトリ名を指定して FileSessionContainer インスタンスを生成します。
      *
      * @param string $dirname セッションファイルを保存するディレクトリ
      * @param Logger|null $logger エラー記録用の Logger (未指定時は NopLogger)
      * @param Clock|null $clock 時刻計算用のクロック (未指定時は DefaultClock インスタンス)
-     * @throws FileSystemException 指定されたディレクトリが存在しない場合
      */
     public function __construct(string $dirname, Logger $logger = null, Clock $clock = null)
     {
-        if (!is_dir($dirname)) {
-            throw new FileSystemException("Directory not found: {$dirname}");
-        }
-
-        $this->dirname = $dirname;
+        $this->handler = new FileHandler($dirname);
         $this->logger  = $logger ?? Logger::getNopLogger();
         $this->clock   = $clock ?? DefaultClock::getInstance();
+        $this->helper  = new SessionContainerHelper();
     }
 
     /**
@@ -61,20 +65,15 @@ class FileSessionContainer implements SessionContainer
      */
     public function cleanExpiredSessions(int $maxAge): int
     {
-        $dir   = new DirectoryIterator($this->dirname);
+        $files = $this->handler->getFiles();
         $now   = $this->clock->getTime();
         $count = 0;
-        foreach ($dir as $entry) {
-            $filename = $entry->getFilename();
-            if (substr($filename, 0, 5) !== "sess_") {
-                continue;
-            }
 
-            $path  = "{$this->dirname}/{$filename}";
-            $limit = filemtime($path) + $maxAge;
-            if ($limit < $now) {
-                @unlink($path) && $count++;
-                $this->logger->debug("Session removed: '{$filename}'");
+        foreach ($this->helper->filterSessionKeys($files) as $file) {
+            $limit = $this->handler->getModifiedTime($file) + $maxAge;
+            if (0 < $limit && $limit < $now) {
+                $this->handler->remove($file) && $count++;
+                $this->logger->debug("Session removed: '{$file}'");
             }
         }
         return $count;
@@ -89,22 +88,11 @@ class FileSessionContainer implements SessionContainer
      */
     public function contains(string $id, int $maxAge): bool
     {
-        $filename = $this->formatFilename($id);
-        if (!is_file($filename)) {
+        $file = "sess_{$id}";
+        if (!$this->handler->contains($file)) {
             return false;
         }
-        return $this->clock->getTime() < (filemtime($filename) + $maxAge);
-    }
-
-    /**
-     * セッション ID を元に、ファイルシステム上の絶対パスを生成します。
-     *
-     * @param string $id セッション ID
-     * @return string セッションファイルのパス
-     */
-    private function formatFilename(string $id): string
-    {
-        return "{$this->dirname}/sess_{$id}";
+        return $this->clock->getTime() < ($this->handler->getModifiedTime($file) + $maxAge);
     }
 
     /**
@@ -117,13 +105,13 @@ class FileSessionContainer implements SessionContainer
      */
     public function load(string $id): array
     {
-        $filename = $this->formatFilename($id);
-        if (!is_file($filename)) {
+        $file = "sess_{$id}";
+        if (!$this->handler->contains($file)) {
             return [];
         }
         try {
-            touch($filename, $this->clock->getTime());
-            $serialized = trim(file_get_contents($filename));
+            $this->handler->setModifiedTime($file, $this->clock->getTime());
+            $serialized = trim($this->handler->get($file));
             $parser     = new ParserContext($serialized);
             return $parser->parse();
         } catch (ParseException $e) {
@@ -139,32 +127,18 @@ class FileSessionContainer implements SessionContainer
      *
      * @param string $id セッション ID
      * @param array $data 保存するセッションデータの連想配列
-     * @return bool 書き込みおよび権限変更に成功した場合に true
+     * @return bool 書き込みに成功した場合に true
      */
     public function save(string $id, array $data): bool
     {
-        $filename   = $this->formatFilename($id);
-        $serialized = $this->serialize($data);
-        $result     = file_put_contents($filename, $serialized) && chmod($filename, 0666);
-        if (!$result) {
-            $this->logger->alert("Failed to save session to '{$filename}'");
-        }
-        return $result;
-    }
+        $file       = "sess_{$id}";
+        $serialized = $this->helper->serialize($data);
+        $result     = $this->handler->put($file, $serialized);
 
-    /**
-     * 連想配列を独自のセッションフォーマット文字列にシリアライズします。
-     *
-     * @param array $data シリアライズ対象の連想配列
-     * @return string シリアライズされた文字列
-     */
-    private function serialize(array $data): string
-    {
-        $result = "";
-        foreach ($data as $key => $value) {
-            $serialized = serialize($value);
-            $result     .= "{$key}|{$serialized}";
+        if (!$result) {
+            $this->logger->alert("Failed to save session to '{$file}'");
         }
+
         return $result;
     }
 }

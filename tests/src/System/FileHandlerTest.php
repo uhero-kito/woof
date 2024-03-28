@@ -193,4 +193,90 @@ class FileHandlerTest extends TestCase
         $expected = "first line" . PHP_EOL . "second line" . PHP_EOL . "third line" . PHP_EOL;
         $this->assertSame($expected, file_get_contents("{$tmpdir}/test02/test.log"));
     }
+
+    /**
+     * 指定したディレクトリ配下のファイル一覧が正しく取得できることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getFiles
+     * @covers ::<private>
+     */
+    public function testGetFiles(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $expectedNonRecursive = [
+            "getfiles01/file1.txt",
+            "getfiles01/file2.txt",
+        ];
+        $this->assertSame($expectedNonRecursive, $obj->getFiles("getfiles01"));
+        $this->assertSame($expectedNonRecursive, $obj->getFiles("getfiles01/"));
+
+        $expectedRecursive = [
+            "getfiles01/file1.txt",
+            "getfiles01/file2.txt",
+            "getfiles01/subdir/file3.txt",
+        ];
+        $this->assertSame($expectedRecursive, $obj->getFiles("getfiles01", true));
+
+        $this->assertSame([], $obj->getFiles("notfound"));
+        $this->assertSame([], $obj->getFiles("getfiles01/file1.txt"));
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が取得できることと、存在しない場合やディレクトリの場合は 0 が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getModifiedTime
+     */
+    public function testGetModifiedTime(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $expected   = filemtime("{$tmpdir}/{$targetFile}");
+        $this->assertSame($expected, $obj->getModifiedTime($targetFile));
+        $this->assertSame(0, $obj->getModifiedTime("notfound.txt"));
+        $this->assertSame(0, $obj->getModifiedTime("test01"));
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が上書きできることと、存在しない場合やディレクトリの場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::setModifiedTime
+     */
+    public function testSetModifiedTime(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $targetTime = 1600000000;
+        $this->assertTrue($obj->setModifiedTime($targetFile, $targetTime));
+        clearstatcache(true, "{$tmpdir}/{$targetFile}");
+        $this->assertSame($targetTime, filemtime("{$tmpdir}/{$targetFile}"));
+        $this->assertFalse($obj->setModifiedTime("notfound.txt", $targetTime));
+        $this->assertFalse($obj->setModifiedTime("test01", $targetTime));
+    }
+
+    /**
+     * 指定したファイルが削除できることと、存在しない場合やディレクトリの場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::remove
+     */
+    public function testRemove(): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileHandler($tmpdir);
+
+        $targetFile = "test01/sample.txt";
+        $this->assertTrue($obj->remove($targetFile));
+        $this->assertFileDoesNotExist("{$tmpdir}/{$targetFile}");
+        $this->assertFalse($obj->remove("notfound.txt"));
+        $this->assertFalse($obj->remove("test01"));
+    }
 }

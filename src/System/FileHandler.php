@@ -2,6 +2,7 @@
 
 namespace Woof\System;
 
+use FilesystemIterator;
 use InvalidArgumentException;
 
 /**
@@ -150,5 +151,92 @@ class FileHandler
     public function contains(string $path): bool
     {
         return is_file($this->formatFullpath($path));
+    }
+
+    /**
+     * 指定されたサブディレクトリ配下のファイルパス一覧を取得します。
+     *
+     * @param string $path サブディレクトリの相対パス。空文字列または "/" の場合はベースディレクトリ直下を対象とします。
+     * @param bool $recursive true を指定した場合は、サブディレクトリ配下も再帰的に取得します。
+     * @return string[] ベースディレクトリを起点とした相対パスの配列
+     */
+    public function getFiles(string $path = "", bool $recursive = false): array
+    {
+        $cleanPath = trim($path, "/");
+        $targetDir = (strlen($cleanPath) > 0) ? $this->formatFullpath($cleanPath) : $this->dirname;
+        if (!is_dir($targetDir)) {
+            return [];
+        }
+
+        $files = $this->scanFiles($targetDir, $cleanPath, $recursive);
+        sort($files);
+        return $files;
+    }
+
+    /**
+     * 指定されたディレクトリ内のファイルを走査し、相対パスの配列を取得します。
+     *
+     * @param string $dirname 走査対象のディレクトリの絶対パス
+     * @param string $prefix ベースディレクトリからの相対パス
+     * @param bool $recursive 再帰的に取得するかどうかをあらわすフラグ
+     * @return string[] ファイルの相対パスの配列
+     */
+    private function scanFiles(string $dirname, string $prefix, bool $recursive): array
+    {
+        $files    = [];
+        $iterator = new FilesystemIterator($dirname, FilesystemIterator::SKIP_DOTS);
+
+        foreach ($iterator as $i) {
+            $filename = $i->getFilename();
+            $nextPath = (strlen($prefix) > 0) ? "{$prefix}/{$filename}" : $filename;
+
+            if ($i->isDir() && $recursive) {
+                $files = array_merge($files, $this->scanFiles($i->getPathname(), $nextPath, $recursive));
+            } elseif ($i->isFile()) {
+                $files[] = $nextPath;
+            }
+        }
+        return $files;
+    }
+
+    /**
+     * 指定されたファイルの最終更新日時を設定 (上書き) します。
+     *
+     * もしも指定されたパスが存在しないか、またはディレクトリだった場合は false を返します。
+     *
+     * @param string $path 対象となるファイルの相対パス
+     * @param int $time 設定する最終更新日時 (Unix time)
+     * @return bool 更新に成功した場合に true、対象がファイルではない場合や失敗した場合は false
+     */
+    public function setModifiedTime(string $path, int $time): bool
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? touch($fullpath, $time) : false;
+    }
+
+    /**
+     * 指定されたファイルの最終更新日時を Unix time として取得します。
+     *
+     * もしも指定されたパスが存在しないか、またはディレクトリだった場合は 0 を返します。
+     *
+     * @param string $path 取得したいファイルの相対パス
+     * @return int 最終更新日時の Unix time (存在しない場合やファイルではない場合は 0)
+     */
+    public function getModifiedTime(string $path): int
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? (int) filemtime($fullpath) : 0;
+    }
+
+    /**
+     * 指定されたパスのファイルを削除します。
+     *
+     * @param string $path 対象となるファイルの相対パス
+     * @return bool 削除に成功した場合に true、対象がファイルではない場合や失敗した場合は false
+     */
+    public function remove(string $path): bool
+    {
+        $fullpath = $this->formatFullpath($path);
+        return is_file($fullpath) ? unlink($fullpath) : false;
     }
 }

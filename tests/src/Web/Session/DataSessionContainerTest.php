@@ -4,21 +4,18 @@ namespace Woof\Web\Session;
 
 use PHPUnit\Framework\TestCase;
 use TestHelper;
+use Woof\FileDataStorage;
 use Woof\Log\FileLogStorage;
 use Woof\Log\Logger;
 use Woof\Log\LoggerBuilder;
-use Woof\System\FileSystemException;
 use Woof\System\FixedClock;
 
 /**
- * FileSessionContainer のテストです。
+ * DataSessionContainer のテストです。
  *
- * このテストクラスではファイルシステムの操作 (ディレクトリ作成・ファイル書き込み) およびタイムゾーンの変更を伴うため、
- * setUp() と tearDown() にて環境の初期化と復元を行っています。
- *
- * @coversDefaultClass Woof\Web\Session\FileSessionContainer
+ * @coversDefaultClass Woof\Web\Session\DataSessionContainer
  */
-class FileSessionContainerTest extends TestCase
+class DataSessionContainerTest extends TestCase
 {
     /**
      * テスト用の一時ディレクトリのパスです。
@@ -42,12 +39,19 @@ class FileSessionContainerTest extends TestCase
     private $defaultTimezone;
 
     /**
+     * テストで使用する FileDataStorage です。
+     *
+     * @var FileDataStorage
+     */
+    private $storage;
+
+    /**
      * 擬似的なセッション保存領域を作成します。
      * また、テストの実行環境に依存しないようタイムゾーンを Asia/Tokyo に固定します。
      */
     protected function setUp(): void
     {
-        $datadir = TEST_DATA_DIR . "/Web/Session/FileSessionContainer";
+        $datadir = TEST_DATA_DIR . "/Web/Session/DataSessionContainer";
         $tmpdir  = "{$datadir}/tmp";
         $logdir  = "{$datadir}/logs";
         TestHelper::cleanDirectory($tmpdir);
@@ -57,8 +61,9 @@ class FileSessionContainerTest extends TestCase
         touch("{$tmpdir}/sess_1357924680bbbbbb", 1500005000);
         touch("{$tmpdir}/sess_9876543210aaaaaa", 1500008000);
 
-        $this->tmpdir = $tmpdir;
-        $this->logdir = $logdir;
+        $this->tmpdir  = $tmpdir;
+        $this->logdir  = $logdir;
+        $this->storage = new FileDataStorage($tmpdir);
 
         $this->defaultTimezone = ini_set("date.timezone", "Asia/Tokyo");
     }
@@ -86,28 +91,17 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * 存在しないディレクトリを指定した場合に FileSystemException がスローされることを確認します。
-     *
-     * @covers ::__construct
-     */
-    public function testConstructFailByInvalidDirectory(): void
-    {
-        $this->expectException(FileSystemException::class);
-        new FileSessionContainer("{$this->tmpdir}/notfound");
-    }
-
-    /**
-     * 生存期間の設定に応じて、有効期限切れのセッションファイルが正しく削除されることを確認します。
+     * 生存期間の設定に応じて、有効期限切れのセッションが正しく削除されることを確認します。
      *
      * @param int $maxAge セッションの生存期間 (秒)
-     * @param int $expected 削除されるファイルの期待件数
+     * @param int $expected 削除されるセッションの期待件数
      * @covers ::__construct
      * @covers ::cleanExpiredSessions
      * @dataProvider provideTestCleanExpiredSessions
      */
     public function testCleanExpiredSessions(int $maxAge, int $expected): void
     {
-        $obj = new FileSessionContainer($this->tmpdir, null, new FixedClock(1500010000));
+        $obj = new DataSessionContainer($this->storage, "", null, new FixedClock(1500010000));
         $this->assertSame($expected, $obj->cleanExpiredSessions($maxAge));
     }
 
@@ -132,10 +126,13 @@ class FileSessionContainerTest extends TestCase
      * @param int $maxAge セッションの生存期間 (秒)
      * @param bool $expected 期待される判定結果
      * @dataProvider provideTestContains
+     * @covers ::__construct
+     * @covers ::contains
+     * @covers ::<private>
      */
     public function testContains(string $id, int $maxAge, bool $expected): void
     {
-        $obj = new FileSessionContainer($this->tmpdir, null, new FixedClock(1500010000));
+        $obj = new DataSessionContainer($this->storage, "", null, new FixedClock(1500010000));
         $this->assertSame($expected, $obj->contains($id, $maxAge));
     }
 
@@ -155,17 +152,18 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * 有効なセッションファイルが正しくロードされ、ロード後にファイルの更新日時が現在時刻に更新されることを確認します。
+     * 有効なセッションデータが正しくロードされ、ロード後に更新日時が現在時刻に更新されることを確認します。
      *
      * @param string $id セッション ID
      * @param array $expected 期待されるセッションデータ
      * @covers ::__construct
      * @covers ::load
+     * @covers ::<private>
      * @dataProvider provideTestLoadSuccess
      */
     public function testLoadSuccess(string $id, array $expected): void
     {
-        $obj = new FileSessionContainer($this->tmpdir, null, new FixedClock(1500010000));
+        $obj = new DataSessionContainer($this->storage, "", null, new FixedClock(1500010000));
         $this->assertSame($expected, $obj->load($id));
 
         $filename = "{$this->tmpdir}/sess_{$id}";
@@ -191,22 +189,24 @@ class FileSessionContainerTest extends TestCase
      *
      * @covers ::__construct
      * @covers ::load
+     * @covers ::<private>
      */
     public function testLoadFailByNotExistingId(): void
     {
-        $obj = new FileSessionContainer($this->tmpdir);
+        $obj = new DataSessionContainer($this->storage, "");
         $this->assertSame([], $obj->load("xxxxxxxxxxxxxxxx"));
     }
 
     /**
-     * フォーマットが不正なセッションファイルを読み込もうとした場合に、エラーログが記録され空の配列が返されることを確認します。
+     * フォーマットが不正なセッションを読み込もうとした場合に、エラーログが記録され空の配列が返されることを確認します。
      *
      * @covers ::__construct
      * @covers ::load
+     * @covers ::<private>
      */
     public function testLoadFailByInvalidFormat(): void
     {
-        $obj = new FileSessionContainer($this->tmpdir, $this->getLogger());
+        $obj = new DataSessionContainer($this->storage, "", $this->getLogger());
         $this->assertSame([], $obj->load("9876543210aaaaaa"));
 
         $expectedLog = "[2017-07-14 14:26:40][ALERT] Failed to parse session for ID '9876543210aaaaaa'";
@@ -215,14 +215,14 @@ class FileSessionContainerTest extends TestCase
     }
 
     /**
-     * セッションデータが指定したフォーマットで正しくファイルに保存されることを確認します。
+     * セッションデータが指定したフォーマットで正しく保存されることを確認します。
      *
      * @covers ::save
      * @covers ::<private>
      */
     public function testSave(): void
     {
-        $obj      = new FileSessionContainer($this->tmpdir);
+        $obj      = new DataSessionContainer($this->storage, "");
         $expected = 'hoge|i:456;fuga|s:4:"asdf";piyo|b:1;';
         $result   = $obj->save("1234567890abcdef", ["hoge" => 456, "fuga" => "asdf", "piyo" => true]);
         $this->assertTrue($result);
@@ -239,16 +239,15 @@ class FileSessionContainerTest extends TestCase
     {
         set_error_handler(function () {});
 
-        // FileHandler による保存を失敗させるため、対象となるセッションファイルと同名のディレクトリを作成します
+        // setUp() で作成されたファイルを削除し、同名のディレクトリを作成することで保存を失敗させます
         $targetPath = "{$this->tmpdir}/sess_1234567890abcdef";
-        if (file_exists($targetPath)) {
-            unlink($targetPath);
-        }
+        unlink($targetPath);
         mkdir($targetPath);
 
-        $obj         = new FileSessionContainer($this->tmpdir, $this->getLogger());
-        $result      = $obj->save("1234567890abcdef", ["hoge" => 456, "fuga" => "asdf", "piyo" => true]);
+        $obj    = new DataSessionContainer($this->storage, "", $this->getLogger());
+        $result = $obj->save("1234567890abcdef", ["hoge" => 456, "fuga" => "asdf", "piyo" => true]);
         $this->assertFalse($result);
+
         $expectedLog = "[2017-07-14 14:26:40][ALERT] Failed to save session to 'sess_1234567890abcdef'";
         $this->assertSame($expectedLog, trim(file_get_contents("{$this->logdir}/app-20170714.log")));
 

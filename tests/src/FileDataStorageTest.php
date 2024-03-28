@@ -112,4 +112,111 @@ class FileDataStorageTest extends TestCase
         $obj    = new FileDataStorage($tmpdir);
         $this->assertSame("{$tmpdir}/hoge/index.html", $obj->formatPath("hoge/index.html"));
     }
+
+    /**
+     * イニシャル・セグメントに基づいて再帰的にキーを取得できることと、
+     * セグメント単位での一致となること (前方一致による誤検知がないこと) を確認します。
+     *
+     * @param string $prefix イニシャル・セグメント
+     * @param array $expected 期待されるキーの配列
+     * @covers ::__construct
+     * @covers ::getKeys
+     * @dataProvider provideTestGetKeys
+     */
+    public function testGetKeys(string $prefix, array $expected): void
+    {
+        $tmpdir = $this->tmpdir;
+        $obj    = new FileDataStorage($tmpdir);
+        $this->assertSame($expected, $obj->getKeys($prefix));
+    }
+
+    /**
+     * testGetKeys() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
+     */
+    public function provideTestGetKeys(): array
+    {
+        $expectedSub = [
+            "getkeys01/sub/entry1.txt",
+            "getkeys01/sub/entry2.txt",
+            "getkeys01/sub/sub2/entry3.txt",
+            "getkeys01/sub/sub2/entry4.txt",
+        ];
+        $expectedAll = [
+            ".gitignore",
+            "basefile.txt",
+            "getkeys01/dummy/entry0.txt",
+            "getkeys01/sample.txt",
+            "getkeys01/sub/entry1.txt",
+            "getkeys01/sub/entry2.txt",
+            "getkeys01/sub/sub2/entry3.txt",
+            "getkeys01/sub/sub2/entry4.txt",
+            "getkeys01/submarine.txt",
+            "getkeys01/subway.txt",
+            "test01/sample.txt",
+        ];
+
+        return [
+            ["getkeys01/sub", $expectedSub],
+            ["getkeys01/sample.txt", []],
+            ["getkeys01/notfound", []],
+            ["///getkeys01//sub///", $expectedSub],
+            ["", $expectedAll],
+        ];
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が取得できることと、存在しない場合は 0 が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::getModifiedTime
+     */
+    public function testGetModifiedTime(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetFile = "{$tmpdir}/test01/sample.txt";
+        $expected   = filemtime($targetFile);
+        $this->assertSame($expected, $obj->getModifiedTime("test01/sample.txt"));
+        $this->assertSame(0, $obj->getModifiedTime("test01/notfound.txt"));
+    }
+
+    /**
+     * 指定したファイルの最終更新日時が正しく上書きされることと、存在しない場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::setModifiedTime
+     * @covers ::getModifiedTime
+     */
+    public function testSetModifiedTime(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetKey  = "test01/sample.txt";
+        $targetTime = 1600000000;
+        $this->assertTrue($obj->setModifiedTime($targetKey, $targetTime));
+        clearstatcache(true, "{$tmpdir}/{$targetKey}");
+        $this->assertSame($targetTime, $obj->getModifiedTime($targetKey));
+        $this->assertFalse($obj->setModifiedTime("test01/notfound.txt", $targetTime));
+    }
+
+    /**
+     * 指定したデータが正しく削除されることと、存在しない場合は false が返されることを確認します。
+     *
+     * @covers ::__construct
+     * @covers ::remove
+     */
+    public function testRemove(): void
+    {
+        $tmpdir   = $this->tmpdir;
+        $obj      = new FileDataStorage($tmpdir);
+
+        $targetKey  = "test01/sample.txt";
+        $this->assertTrue($obj->remove($targetKey));
+        $this->assertFileDoesNotExist("{$tmpdir}/{$targetKey}");
+        $this->assertFalse($obj->remove("test01/notfound.txt"));
+    }
 }

@@ -4,9 +4,10 @@ namespace Woof\Web;
 
 use Woof\Config;
 use Woof\DataStorage;
-use Woof\FileDataStorage;
 use Woof\Log\Logger;
+use Woof\Web\Session\DataSessionContainer;
 use Woof\Web\Session\FileSessionContainer;
+use Woof\Web\Session\SessionContainer;
 use Woof\Web\Session\SessionStorage;
 use Woof\Web\Session\SessionStorageBuilder;
 
@@ -23,12 +24,15 @@ use Woof\Web\Session\SessionStorageBuilder;
  * - keyname: セッションのキーとして使用される Cookie 名 (デフォルト: PHP の session_name() の値) です。
  * - max-age: セッションの有効期間 (秒数) です。60 から 7200 の間で指定します (デフォルト: PHP の session.gc_maxlifetime の値) 。
  * - gc-probability: ガベージコレクションの実行確率です。0.0 から 1.0 の間で指定します (デフォルト: PHP の gc_probability と gc_divisor から算出した値) 。
+ *
+ * 引数の DataStorage は基本的に FileDataStorage を想定しており、上記プロパティのドキュメント (「セッションファイルの保存先ディレクトリ名」など) もそれを前提とした記載としています。
+ * しかし FileDataStorage 以外の任意の DataStorage 実装も適用可能です。
+ * 独自の DataStorage を導入する場合は「ディレクトリ名」を「イニシャル・セグメント」等に適宜読み替えてください。
  */
 class StandardSessionStorageFactory
 {
     /**
      * 与えられた設定と DataStorage を元に、SessionStorage インスタンスを生成します。
-     * セッションの保存先ディレクトリが存在しない場合は自動的に作成します。
      *
      * @param Config $config アプリケーション全体の設定をあらわす Config オブジェクト
      * @param DataStorage|null $data ファイルシステムのルートなどを管理するストレージオブジェクト
@@ -37,12 +41,11 @@ class StandardSessionStorageFactory
      */
     public function create(Config $config, DataStorage $data = null, Logger $logger = null): SessionStorage
     {
-        $sub      = $config->getSubConfig("session");
-        $savePath = $this->getSessionSavePath($sub, $data);
-        is_dir($savePath) || mkdir($savePath, 0777, true);
+        $sub       = $config->getSubConfig("session");
+        $container = $this->createSessionContainer($config, $sub, $data, $logger);
 
         return (new SessionStorageBuilder())
-            ->setSessionContainer(new FileSessionContainer($savePath, $logger))
+            ->setSessionContainer($container)
             ->setKey($this->getSessionKey($sub))
             ->setMaxAge($this->getMaxAge($sub))
             ->setGcProbability($this->getGcProbability($sub))
@@ -50,23 +53,30 @@ class StandardSessionStorageFactory
     }
 
     /**
-     * 設定情報からセッションの保存先ディレクトリパスを決定します。
-     * DataStorage が FileDataStorage の場合はその管理下のディレクトリを返し、
-     * それ以外の場合は PHP の設定 (session_save_path) またはシステムのテンポラリディレクトリを返します。
+     * 条件に応じて適切な SessionContainer インスタンスを生成します。
      *
-     * @param Config $sub "session" セクションの設定をあらわす Config オブジェクト
+     * DataStorage が指定されており、かつ Config に "session" セクションが存在する場合は、
+     * 引数の DataStorage を利用した DataSessionContainer を返します。
+     * それ以外の場合は PHP の設定 (session_save_path) またはシステムのテンポラリディレクトリを参照する
+     * FileSessionContainer を返します。
+     *
+     * @param Config $config 全体の Config オブジェクト
+     * @param Config $sub "session" セクションの Config オブジェクト
      * @param DataStorage|null $data ストレージオブジェクト
-     * @return string 保存先ディレクトリの絶対パス
+     * @param Logger|null $logger エラー出力用の Logger
+     * @return SessionContainer 構築された SessionContainer オブジェクト
      */
-    private function getSessionSavePath(Config $sub, DataStorage $data = null)
+    private function createSessionContainer(Config $config, Config $sub, DataStorage $data = null, Logger $logger = null): SessionContainer
     {
-        if ($data instanceof FileDataStorage) {
-            $dirname = $sub->getString("dirname", "sessions");
-            return $data->formatPath($dirname);
-        } else {
-            $savePath = session_save_path();
-            return strlen($savePath) ? $savePath : sys_get_temp_dir();
+        if ($data !== null && $config->contains("session")) {
+            $prefix = $sub->getString("dirname", "sessions");
+            return new DataSessionContainer($data, $prefix, $logger);
         }
+
+        $savePath  = session_save_path();
+        $targetDir = strlen($savePath) ? $savePath : sys_get_temp_dir();
+        is_dir($targetDir) || mkdir($targetDir, 0777, true);
+        return new FileSessionContainer($targetDir, $logger);
     }
 
     /**
