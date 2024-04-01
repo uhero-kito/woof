@@ -2,8 +2,10 @@
 
 namespace Woof\Web;
 
+use InvalidArgumentException;
 use Woof\Http\ContentDisposition;
 use Woof\Http\HeaderField;
+use Woof\Http\QualityValues;
 use Woof\Http\Request;
 use Woof\Http\Response;
 use Woof\Http\Response\Body;
@@ -12,6 +14,7 @@ use Woof\Http\Response\CookieAttributesBuilder;
 use Woof\Http\ResponseBuilder;
 use Woof\Http\Status;
 use Woof\Http\TextField;
+use Woof\Locale;
 
 /**
  * Web アプリケーション (Controller) 内で HTTP レスポンスを構築するまでの操作を統括するクラスです。
@@ -279,6 +282,117 @@ class Operator
     public function setAttachmentFilename(string $filename = ""): self
     {
         return $this->setHeader(new ContentDisposition($filename));
+    }
+
+    /**
+     * エンドユーザー, WEB アプリケーション, OS (システム) の優先順位でロケールを解決し、
+     * フォールバック探索用に連結された Locale オブジェクトを構築して返します。
+     *
+     * 解決可能なロケールが 1 つも存在しない場合は、ルートロケールを返します。
+     *
+     * @param Locale|null $locale 優先的に使用するエンドユーザーの Locale オブジェクト (未指定の場合は null)
+     * @return Locale             解決および連結された Locale オブジェクト
+     */
+    public function getLocale(Locale $locale = null): Locale
+    {
+        return Locale::getRoot()
+            ->append($this->resolveUserLocale($locale))
+            ->append($this->resolveAppLocale())
+            ->append($this->resolveSystemLocale());
+    }
+
+    /**
+     * エンドユーザーのロケールを解決します。
+     *
+     * 引数に有効な Locale が指定された場合はそれを返し、未指定の場合は
+     * Accept-Language ヘッダーから優先度が最も高い有効なロケールをパースして返します。
+     *
+     * @param Locale|null $locale 引数として指定された Locale オブジェクト
+     * @return Locale             解決されたエンドユーザーの Locale (見つからなかった場合はルートロケール)
+     */
+    private function resolveUserLocale(Locale $locale = null): Locale
+    {
+        $root = Locale::getRoot();
+        if ($locale !== null && $locale !== $root) {
+            return $locale;
+        }
+
+        $acceptLang = $this->request->getHeader("Accept-Language");
+        if (!($acceptLang instanceof QualityValues)) {
+            return $root;
+        }
+
+        foreach (array_keys($acceptLang->getValue()) as $langStr) {
+            $parsed = $this->parseLocaleSafely($langStr);
+            if ($parsed !== $root) {
+                return $parsed;
+            }
+        }
+        return $root;
+    }
+
+    /**
+     * WEB アプリケーションのロケールを解決します。
+     *
+     * Environment の Config (app.json など) に設定された "locale" 値を参照し、Locale としてパースします。
+     *
+     * @return Locale 解決されたアプリケーションの Locale (設定がないか、またはパース失敗時はルートロケール)
+     */
+    private function resolveAppLocale(): Locale
+    {
+        $appConfig    = $this->env->getConfig();
+        $appLocaleStr = $appConfig->getString("app.locale", "");
+        return $this->parseLocaleSafely($appLocaleStr);
+    }
+
+    /**
+     * OS (システム) のロケールを解決します。
+     *
+     * intl 拡張機能が有効な場合は php.ini の `intl.default_locale` に設定されている値を Locale オブジェクトとしてパースします。
+     * 無効な場合はルートロケールを返します。
+     *
+     * @return Locale 解決されたシステムの Locale (設定がないか、またはパースに失敗した場合はルートロケール)
+     */
+    private function resolveSystemLocale(): Locale
+    {
+        $root = Locale::getRoot();
+
+        if (!extension_loaded("intl")) {
+            return $root;
+        }
+
+        // @codeCoverageIgnoreStart
+        $sysLocaleStr = ini_get("intl.default_locale");
+        if (!is_string($sysLocaleStr) || $sysLocaleStr === "") {
+            return $root;
+        }
+
+        return $this->parseLocaleSafely($sysLocaleStr);
+        // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * 文字列から Locale オブジェクトへのパースを安全に試行します。
+     *
+     * ルートロケールやパース時の InvalidArgumentException を吸収しますが、
+     * デバッグ時の追跡を容易にするため、失敗時には Logger へ DEBUG レベルで記録を残します。
+     *
+     * @param string $localeStr パース対象のロケール文字列
+     * @return Locale           パースに成功した Locale オブジェクト (失敗時はルートロケール)
+     */
+    private function parseLocaleSafely(string $localeStr): Locale
+    {
+        $root = Locale::getRoot();
+        if ($localeStr === "") {
+            return $root;
+        }
+        try {
+            return Locale::parseLocale($localeStr);
+        } catch (InvalidArgumentException $e) {
+            // パースに失敗した場合はデバッグログを残し、ルートロケールを返します
+            $this->env->getLogger()->debug("Failed to parse locale string '{$localeStr}': " . $e->getMessage());
+            return $root;
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use TestHelper;
 use Woof\Http\ContentDisposition;
 use Woof\Http\HttpDate;
+use Woof\Http\QualityValues;
 use Woof\Http\Request;
 use Woof\Http\RequestBuilder;
 use Woof\Http\Response;
@@ -14,7 +15,12 @@ use Woof\Http\Response\TextBody;
 use Woof\Http\ResponseBuilder;
 use Woof\Http\Status;
 use Woof\Http\TextField;
+use Woof\Locale;
+use Woof\Log\FileLogStorage;
+use Woof\Log\Logger;
+use Woof\Log\LoggerBuilder;
 use Woof\Resources;
+use Woof\System\FixedClock;
 use Woof\System\VariablesBuilder;
 
 /**
@@ -35,21 +41,41 @@ class OperatorTest extends TestCase
     const TMP_DIR = TEST_DATA_DIR . "/Web/Operator/tmp";
 
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
+     * @var string
+     */
+    private $defaultTimezone;
+
+    /**
      * 一時ディレクトリをクリーンアップし、テスト用データをコピーします。
+     * また、テスト用に PHP の設定値をバックアップします。
      */
     protected function setUp(): void
     {
-        $tmpdir  = self::TMP_DIR;
+        $tmpdir = self::TMP_DIR;
         TestHelper::cleanDirectory($tmpdir);
         TestHelper::copyDirectory(TEST_DATA_DIR . "/Web/Operator/subjects", $tmpdir);
+
+        $this->defaultTimezone = ini_set("timezone", "Asia/Tokyo");
+    }
+
+    /**
+     * テスト用に変更した PHP の設定値をもとに戻します。
+     */
+    protected function tearDown(): void
+    {
+        ini_set("timezone", $this->defaultTimezone);
     }
 
     /**
      * テスト用の WebEnvironment インスタンスを生成して返します。
      *
+     * @param string $confdir
+     * @param Logger $logger
      * @return WebEnvironment
      */
-    private function createTestWebEnvironment(): WebEnvironment
+    private function createTestWebEnvironment($confdir = "conf01", Logger $logger = null): WebEnvironment
     {
         $server = [
             "HTTP_ACCEPT_ENCODING"   => "gzip, deflate",
@@ -68,10 +94,11 @@ class OperatorTest extends TestCase
 
         $tmpdir = self::TMP_DIR;
         return (new WebEnvironmentBuilder())
-            ->setConfigDir("{$tmpdir}/conf01")
+            ->setConfigDir("{$tmpdir}/{$confdir}")
             ->setResourcesDir("{$tmpdir}/res01")
             ->setDataStorageDir("{$tmpdir}/data01")
             ->setVariables($var)
+            ->setLogger($logger ?? Logger::getNopLogger())
             ->build();
     }
 
@@ -463,6 +490,135 @@ class OperatorTest extends TestCase
         $expected   = new ContentDisposition("sample data.zip");
         $headerList = $obj->getResponseBuilder()->getHeaderList();
         $this->assertEquals($expected, $headerList["content-disposition"]);
+    }
+
+    /**
+     * Operator::getLocale() の引数にロケールが指定されていない場合、
+     * Accept-Language -> App (Config) -> (System は省略) の順に連結されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleUsesAcceptLanguageWhenArgumentIsNull(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["ja-JP" => 1.0, "en-US" => 0.8]))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf02");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+        $chain    = [];
+        $current  = $locale;
+        do {
+            $chain[] = (string) $current;
+        } while ($current->canFallback() && ($current = $current->fallback()));
+
+        // システムロケール (es-ES) を排除し、zh-CN までで完結することを確認します
+        $expected = ["ja-JP", "ja", "zh-CN", "zh"];
+        $this->assertSame($expected, $chain);
+    }
+
+    /**
+     * Operator::getLocale() の引数にロケールが指定された場合、
+     * Accept-Language が上書き (無視) され、引数 -> App (Config) -> (System は省略) の順に連結されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleOverridesAcceptLanguageWithArgument(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["ja-JP" => 1.0, "en-US" => 0.8]))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf02");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale(Locale::parseLocale("it-IT"));
+        $chain    = [];
+        $current  = $locale;
+        do {
+            $chain[] = (string) $current;
+        } while ($current->canFallback() && ($current = $current->fallback()));
+
+        // Accept-Language の "ja-JP", "en-US" はチェーンに含まれないことを確認します
+        $expected = ["it-IT", "it", "zh-CN", "zh"];
+        $this->assertSame($expected, $chain);
+    }
+
+    /**
+     * 有効なロケールが一切指定されていない場合、安全にルートロケールが返されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleReturnsRootWhenEmpty(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new TextField("Accept-Language", ""))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf03");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+
+        $this->assertSame(Locale::getRoot(), $locale);
+    }
+
+    /**
+     * 不正なロケール文字列のパースに失敗した場合、例外が吸収され、
+     * Logger オブジェクトを経由してログファイルにログレベル DEBUG で出力されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleLogsErrorOnInvalidLocale(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["invalid-locale-format" => 1.0]))
+            ->build();
+
+        $time   = 1555555555; // 2019-04-18 02:45:55 (UTC)
+        $logdir = self::TMP_DIR . "/logs";
+        $logger = (new LoggerBuilder())
+            ->setLogLevel(Logger::LEVEL_DEBUG)
+            ->setClock(new FixedClock($time))
+            ->setStorage(new FileLogStorage($logdir))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf03", $logger);
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+
+        $this->assertSame(Locale::getRoot(), $locale);
+
+        $datePart = date("Ymd", $time);
+        $logFile  = "{$logdir}/app-{$datePart}.log";
+        $this->assertFileExists($logFile);
+
+        $logContent       = file_get_contents($logFile);
+        $exceptionMessage = "Invalid or unsupported subtag: format in locale: invalid-locale-format";
+        $logMessage       = "Failed to parse locale string 'invalid-locale-format': {$exceptionMessage}";
+        $datePartLong     = date("Y-m-d H:i:s", $time);
+        $expectedLogLine  = "[{$datePartLong}][DEBUG] {$logMessage}" . PHP_EOL;
+
+        $this->assertSame($expectedLogLine, $logContent);
     }
 
     /**
