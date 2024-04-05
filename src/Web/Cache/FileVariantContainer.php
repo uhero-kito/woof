@@ -37,6 +37,13 @@ class FileVariantContainer implements VariantContainer
     private $clock;
 
     /**
+     * キャッシュ処理の共通ロジックを提供するヘルパーです。
+     *
+     * @var VariantContainerHelper
+     */
+    private $helper;
+
+    /**
      * 保存先ディレクトリと必要なオブジェクトを指定してオブジェクトを初期化します。
      *
      * @param string $dirname キャッシュファイルの保存先ディレクトリ
@@ -48,6 +55,7 @@ class FileVariantContainer implements VariantContainer
         $this->handler = new FileHandler($dirname);
         $this->logger  = $logger ?? Logger::getNopLogger();
         $this->clock   = $clock ?? DefaultClock::getInstance();
+        $this->helper  = new VariantContainerHelper();
     }
 
     /**
@@ -63,13 +71,9 @@ class FileVariantContainer implements VariantContainer
         $now   = $this->clock->getTime();
         $count = 0;
 
-        foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) !== "dat") {
-                continue;
-            }
-
-            $limit = $this->handler->getModifiedTime($file) + $maxAge;
-            if (0 < $limit && $limit < $now) {
+        foreach ($this->helper->filterVariantKeys($files, ".dat") as $file) {
+            $mtime = $this->handler->getModifiedTime($file);
+            if ($this->helper->checkExpired($mtime, $maxAge, $now)) {
                 $this->handler->remove($file) && $count++;
                 $fullpath = $this->handler->formatFullpath($file);
                 $this->logger->debug("Expired variant cache file deleted: '{$fullpath}'");
@@ -86,7 +90,7 @@ class FileVariantContainer implements VariantContainer
      */
     private function formatFilename(string $id): string
     {
-        return "{$id}.dat";
+        return $this->helper->formatFilename($id, ".dat");
     }
 
     /**

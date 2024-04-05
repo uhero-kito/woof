@@ -51,6 +51,13 @@ class DataVariantContainer implements VariantContainer
     private $clock;
 
     /**
+     * キャッシュ処理の共通ロジックを提供するヘルパーです。
+     *
+     * @var VariantContainerHelper
+     */
+    private $helper;
+
+    /**
      * DataStorage とイニシャル・セグメントなどを指定してオブジェクトを初期化します。
      *
      * @param DataStorage $storage バリアントデータを保存する DataStorage
@@ -66,6 +73,7 @@ class DataVariantContainer implements VariantContainer
         $this->suffix  = $suffix;
         $this->logger  = $logger ?? Logger::getNopLogger();
         $this->clock   = $clock ?? DefaultClock::getInstance();
+        $this->helper  = new VariantContainerHelper();
     }
 
     /**
@@ -77,23 +85,17 @@ class DataVariantContainer implements VariantContainer
      */
     public function cleanExpiredVariants(int $maxAge): int
     {
-        $keys   = $this->storage->getKeys($this->prefix);
-        $now    = $this->clock->getTime();
-        $count  = 0;
-        $suffix = $this->suffix;
+        $keys  = $this->storage->getKeys($this->prefix);
+        $now   = $this->clock->getTime();
+        $count = 0;
 
-        foreach ($keys as $key) {
-            if ($suffix !== "" && substr($key, -strlen($suffix)) !== $suffix) {
-                continue;
-            }
-
-            $limit = $this->storage->getModifiedTime($key) + $maxAge;
-            if (0 < $limit && $limit < $now) {
+        foreach ($this->helper->filterVariantKeys($keys, $this->suffix) as $key) {
+            $mtime = $this->storage->getModifiedTime($key);
+            if ($this->helper->checkExpired($mtime, $maxAge, $now)) {
                 $this->storage->remove($key) && $count++;
                 $this->logger->debug("Expired variant cache data deleted: '{$key}'");
             }
         }
-
         return $count;
     }
 
@@ -105,7 +107,7 @@ class DataVariantContainer implements VariantContainer
      */
     private function formatKey(string $id): string
     {
-        $filename = $id . $this->suffix;
+        $filename = $this->helper->formatFilename($id, $this->suffix);
         return (strlen($this->prefix) > 0) ? "{$this->prefix}/{$filename}" : $filename;
     }
 
