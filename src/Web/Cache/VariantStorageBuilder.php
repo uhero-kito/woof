@@ -176,4 +176,14 @@ class VariantStorageBuilder
     {
         return $this->random ?? DefaultRandom::getInstance();
     }
+
+    /**
+     * このビルダーの設定内容に基づいて VariantStorage インスタンスを構築します。
+     *
+     * @return VariantStorage 構築された VariantStorage オブジェクト
+     */
+    public function build(): VariantStorage
+    {
+        return VariantStorage::newInstance($this);
+    }
 }

@@ -3,6 +3,7 @@
 namespace Woof\Web\Cache;
 
 use InvalidArgumentException;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use Woof\System\ArrayRandom;
 use Woof\System\DefaultClock;
@@ -159,5 +160,39 @@ class VariantStorageBuilderTest extends TestCase
         $random = new ArrayRandom([123, 456]);
         $this->assertSame($obj, $obj->setRandom($random));
         $this->assertSame($random, $obj->getRandom());
+    }
+
+    /**
+     * コンテナが未設定の状態で build() を呼び出した場合、例外がスローされることを確認します。
+     *
+     * @covers ::build
+     */
+    public function testBuildThrowsExceptionWhenContainerNotSet(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage("VariantContainer must be set before building VariantStorage.");
+
+        $obj = new VariantStorageBuilder();
+        $obj->build();
+    }
+
+    /**
+     * 設定された内容に基づいて VariantStorage が正しく構築されることを確認します。
+     *
+     * @covers ::build
+     */
+    public function testBuildCreatesVariantStorage(): void
+    {
+        $container = new FileVariantContainer(TEST_DATA_DIR);
+        $storage   = (new VariantStorageBuilder())
+            ->setVariantContainer($container)
+            ->setMaxAge(1800)
+            ->setGcProbability(0.5)
+            ->build();
+
+        $this->assertInstanceOf(VariantStorage::class, $storage);
+        $this->assertSame($container, $storage->getVariantContainer());
+        $this->assertSame(1800, $storage->getMaxAge());
+        $this->assertSame(0.5, $storage->getGcProbability());
     }
 }
