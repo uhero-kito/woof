@@ -3,10 +3,13 @@
 namespace Woof\Web;
 
 use PHPUnit\Framework\TestCase;
+use Woof\FileDataStorage;
 use Woof\Http\HeaderParser;
 use Woof\Http\HttpDateFormat;
 use Woof\System\FixedClock;
 use Woof\System\VariablesBuilder;
+use Woof\Web\Cache\DataVariantContainer;
+use Woof\Web\Cache\VariantStorageBuilder;
 use Woof\Web\Session\FileSessionContainer;
 use Woof\Web\Session\SessionStorageBuilder;
 
@@ -40,6 +43,26 @@ class WebEnvironmentBuilderTest extends TestCase
         $this->assertSame($obj, $obj->setSessionStorage($ss));
         $this->assertTrue($obj->hasSessionStorage());
         $this->assertSame($ss, $obj->getSessionStorage());
+    }
+
+    /**
+     * VariantStorage の設定・存在確認・取得が正しく機能することを確認します。
+     *
+     * @covers ::setVariantStorage
+     * @covers ::hasVariantStorage
+     * @covers ::getVariantStorage
+     */
+    public function testVariantStorage(): void
+    {
+        $vs  = (new VariantStorageBuilder())
+            ->setVariantContainer(new DataVariantContainer(new FileDataStorage(self::TMP_DIR), "cache"))
+            ->setMaxAge(3600)
+            ->build();
+        $obj = new WebEnvironmentBuilder();
+        $this->assertFalse($obj->hasVariantStorage());
+        $this->assertSame($obj, $obj->setVariantStorage($vs));
+        $this->assertTrue($obj->hasVariantStorage());
+        $this->assertSame($vs, $obj->getVariantStorage());
     }
 
     /**

@@ -10,11 +10,12 @@ use Woof\Http\Request;
 use Woof\Http\RequestLoader;
 use Woof\Log\Logger;
 use Woof\System\Variables;
+use Woof\Web\Cache\VariantStorage;
 use Woof\Web\Session\SessionStorage;
 
 /**
  * Web アプリケーションの実行環境を表現するクラスです。
- * 既定の Environment の内容に加えて HTTP リクエスト, SessionStorage, Context (URL の書式化をサポートするオブジェクト)
+ * 既定の Environment の内容に加えて HTTP リクエスト, SessionStorage, VariantStorage, Context (URL の書式化をサポートするオブジェクト)
  * などの Web アプリケーションに特化した機能を提供します。
  */
 class WebEnvironment extends Environment
@@ -25,6 +26,13 @@ class WebEnvironment extends Environment
      * @var SessionStorage
      */
     private $sessionStorage;
+
+    /**
+     * キャッシュされた View の内容を管理するオブジェクトです。
+     *
+     * @var VariantStorage
+     */
+    private $variantStorage;
 
     /**
      * URL の書式化などに使用するオブジェクトです。
@@ -67,8 +75,10 @@ class WebEnvironment extends Environment
         $logger = $instance->getLogger();
         $parser = $builder->hasHeaderParser() ? $builder->getHeaderParser() : null;
         $sess   = $builder->hasSessionStorage() ? $builder->getSessionStorage() : (new StandardSessionStorageFactory())->create($config, $data, $logger);
+        $vars   = $builder->hasVariantStorage() ? $builder->getVariantStorage() : (new StandardVariantStorageFactory())->create($config, $data, $logger);
 
         $instance->sessionStorage = $sess;
+        $instance->variantStorage = $vars;
         $instance->context        = self::createContext($config);
         $instance->clientRequest  = self::createClientRequest($instance->getVariables(), $logger, $parser);
         return $instance;
@@ -108,6 +118,16 @@ class WebEnvironment extends Environment
     public function getSessionStorage(): SessionStorage
     {
         return $this->sessionStorage;
+    }
+
+    /**
+     * 設定された VariantStorage オブジェクトを取得します。
+     *
+     * @return VariantStorage
+     */
+    public function getVariantStorage(): VariantStorage
+    {
+        return $this->variantStorage;
     }
 
     /**
