@@ -5,12 +5,15 @@ namespace Woof\Web;
 use InvalidArgumentException;
 use Woof\Http\ContentDisposition;
 use Woof\Http\HeaderField;
+use Woof\Http\HttpDate;
 use Woof\Http\QualityValues;
 use Woof\Http\Request;
 use Woof\Http\Response;
 use Woof\Http\Response\Body;
 use Woof\Http\Response\CookieAttributes;
 use Woof\Http\Response\CookieAttributesBuilder;
+use Woof\Http\Response\EmptyBody;
+use Woof\Http\Response\TextBody;
 use Woof\Http\ResponseBuilder;
 use Woof\Http\Status;
 use Woof\Http\TextField;
@@ -48,6 +51,13 @@ class Operator
      * @var Session
      */
     private $session;
+
+    /**
+     * View のキャッシュ機能を有効にするかどうかを示すフラグです。
+     *
+     * @var bool
+     */
+    private $enablesCache = false;
 
     /**
      * 必要なオブジェクト群を指定して Operator インスタンスを初期化します。
@@ -144,6 +154,38 @@ class Operator
             $this->builder->setCookie($ss->getKey(), $session->getId(), $attr);
         }
         return $this;
+    }
+
+    /**
+     * View のキャッシュ機能を有効化・無効化します。
+     *
+     * @param bool $enablesCache キャッシュを有効にする場合は true
+     * @return Operator このオブジェクト自身
+     */
+    public function setEnablesCache(bool $enablesCache): self
+    {
+        $this->enablesCache = $enablesCache;
+        return $this;
+    }
+
+    /**
+     * View のキャッシュ機能が有効に設定されているかを判定します。
+     *
+     * @return bool 有効な場合に true
+     */
+    public function getEnablesCache(): bool
+    {
+        return $this->enablesCache;
+    }
+
+    /**
+     * 現在のレスポンス構築状態において、キャッシュ処理を実行すべきかどうかを判定します。
+     *
+     * @return bool キャッシュ有効化フラグが true かつ、Body が ViewBody の場合に true
+     */
+    private function isCacheEnabled(): bool
+    {
+        return $this->enablesCache && ($this->builder->getBody() instanceof ViewBody);
     }
 
     /**
@@ -255,7 +297,7 @@ class Operator
 
     /**
      * クライアントのリクエストヘッダーを検査し、リソースが更新されていないかを判定します。
-     * If-Modified-Since と If-None-Match の両方が一致する場合に true となります。
+     * If-Modified-Since と If-None-Match のいずれかが一致する場合に true となります。
      *
      * @param int $mtime リソースの最終更新日時 (Unix time)
      * @param string $etag リソースの ETag 値
@@ -264,9 +306,23 @@ class Operator
     public function checkNotModified(int $mtime, string $etag): bool
     {
         $request = $this->request;
-        $ifm     = $request->getHeader("If-Modified-Since");
-        $ifn     = $request->getHeader("If-None-Match");
-        return ($ifm->getValue() === $mtime && $ifn->getValue() === $etag);
+        $ifm     = $request->getHeader("If-Modified-Since")->getValue();
+        $ifn     = $request->getHeader("If-None-Match")->getValue();
+
+        // どちらも指定されていない場合は false (例えば新規アクセスの場合)
+        if ($ifm === null && $ifn === null) {
+            return false;
+        }
+        // If-Modified-Since が指定されており、一致しない場合は false
+        if ($ifm !== null && $ifm !== $mtime) {
+            return false;
+        }
+        // If-None-Match が指定されており、一致しない場合は false
+        if ($ifn !== null && $ifn !== $etag) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -397,11 +453,34 @@ class Operator
 
     /**
      * これまでの操作内容に基づいて最終的な Response オブジェクトを構築します。
+     * キャッシュ機能が有効な場合は、レンダリングをスキップしてキャッシュからの構築を試行します。
      *
      * @return Response 構築された Response オブジェクト
      */
     public function build(): Response
     {
-        return $this->builder->build();
+        $builder = $this->builder;
+        if (!$this->isCacheEnabled()) {
+            return $builder->build();
+        }
+
+        $storage = $this->env->getVariantStorage();
+        $body    = $builder->getBody();
+        $variant = $storage->fetchVariant($body);
+
+        $builder
+            ->setHeader(new TextField("ETag", $variant->getId()))
+            ->setHeader(new HttpDate("Last-Modified", $variant->getLastModified()));
+
+        if ($this->checkNotModified($variant->getLastModified(), $variant->getId())) {
+            return $builder
+                ->setStatus(Status::get304())
+                ->setBody(EmptyBody::getInstance())
+                ->build();
+        } else {
+            return $builder
+                ->setBody(new TextBody($variant->getContent(), $body->getContentType()))
+                ->build();
+        }
     }
 }

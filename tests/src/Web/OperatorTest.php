@@ -11,6 +11,7 @@ use Woof\Http\Request;
 use Woof\Http\RequestBuilder;
 use Woof\Http\Response;
 use Woof\Http\Response\Cookie;
+use Woof\Http\Response\EmptyBody;
 use Woof\Http\Response\TextBody;
 use Woof\Http\ResponseBuilder;
 use Woof\Http\Status;
@@ -121,19 +122,26 @@ class OperatorTest extends TestCase
 
     /**
      * キャッシュ検証用のヘッダーを持つ Request オブジェクトを生成して返します。
+     * 引数で If-Modified-Since と If-None-Match の値を指定できます。
      *
+     * @param int|null $ifModifiedSince Unix time (指定しない場合はヘッダーをセットしません)
+     * @param string|null $ifNoneMatch ETag 値 (指定しない場合はヘッダーをセットしません)
      * @return Request
      */
-    private function createRequestWithCache(): Request
+    private function createRequestWithCache(int $ifModifiedSince = null, string $ifNoneMatch = null): Request
     {
-        return (new RequestBuilder())
+        $builder = (new RequestBuilder())
             ->setScheme("https")
             ->setHost("www.example.com")
             ->setPath("/test/css/style.css")
-            ->setUri("/test/css/style.css")
-            ->setHeader(new HttpDate("If-Modified-Since", 1555555555))
-            ->setHeader(new TextField("If-None-Match", "abcdefabcdef"))
-            ->build();
+            ->setUri("/test/css/style.css");
+        if ($ifModifiedSince !== null) {
+            $builder->setHeader(new HttpDate("If-Modified-Since", $ifModifiedSince));
+        }
+        if ($ifNoneMatch !== null) {
+            $builder->setHeader(new TextField("If-None-Match", $ifNoneMatch));
+        }
+        return $builder->build();
     }
 
     /**
@@ -179,11 +187,13 @@ class OperatorTest extends TestCase
     /**
      * キャッシュ検証用のリクエストを持ったテスト用 Operator を生成して返します。
      *
+     * @param int|null $ifModifiedSince Unix time
+     * @param string|null $ifNoneMatch ETag 値
      * @return Operator
      */
-    private function createTestObjectWithCache(): Operator
+    private function createTestObjectWithCache(int $ifModifiedSince = null, string $ifNoneMatch = null): Operator
     {
-        return new Operator($this->createRequestWithCache(), $this->createTestWebEnvironment());
+        return new Operator($this->createRequestWithCache($ifModifiedSince, $ifNoneMatch), $this->createTestWebEnvironment());
     }
 
     /**
@@ -316,6 +326,24 @@ class OperatorTest extends TestCase
 
         $cookieList = $obj->getResponseBuilder()->getCookieList();
         $this->assertFalse(array_key_exists("test_sessid", $cookieList));
+    }
+
+    /**
+     * キャッシュの有効無効フラグの設定と取得が正しく機能することを確認します。
+     *
+     * @covers ::setEnablesCache
+     * @covers ::getEnablesCache
+     */
+    public function testEnablesCache(): void
+    {
+        $obj = $this->createTestObject();
+        $this->assertFalse($obj->getEnablesCache());
+
+        $this->assertSame($obj, $obj->setEnablesCache(true));
+        $this->assertTrue($obj->getEnablesCache());
+
+        $this->assertSame($obj, $obj->setEnablesCache(false));
+        $this->assertFalse($obj->getEnablesCache());
     }
 
     /**
@@ -464,16 +492,38 @@ class OperatorTest extends TestCase
     /**
      * キャッシュ制御ヘッダーをもとに、コンテンツが変更されていないかどうか正しく判定できることを確認します。
      *
+     * @param int|null    $reqTime  リクエストの If-Modified-Since ヘッダーの値
+     * @param string|null $reqEtag  リクエストの If-None-Match ヘッダーの値
+     * @param bool        $expected 期待される判定結果
      * @covers ::checkNotModified
+     * @dataProvider provideTestCheckNotModified
      */
-    public function testCheckNotModified(): void
+    public function testCheckNotModified($reqTime, $reqEtag, bool $expected): void
     {
         $time = 1555555555;
         $etag = "abcdefabcdef";
-        $obj1 = $this->createTestObject();
-        $obj2 = $this->createTestObjectWithCache();
-        $this->assertFalse($obj1->checkNotModified($time, $etag));
-        $this->assertTrue($obj2->checkNotModified($time, $etag));
+        $obj  = $this->createTestObjectWithCache($reqTime, $reqEtag);
+        $this->assertSame($expected, $obj->checkNotModified($time, $etag));
+    }
+
+    /**
+     * testCheckNotModified() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
+     */
+    public function provideTestCheckNotModified(): array
+    {
+        $time = 1555555555;
+        $etag = "abcdefabcdef";
+
+        return [
+            "no-headers"                 => [null, null, false],
+            "both-match"                 => [$time, $etag, true],
+            "only-if-none-match"         => [null, $etag, true],
+            "only-if-modified-since"     => [$time, null, true],
+            "if-none-match-mismatch"     => [$time, "wrongetag", false],
+            "if-modified-since-mismatch" => [$time - 1000, $etag, false],
+        ];
     }
 
     /**
@@ -622,18 +672,81 @@ class OperatorTest extends TestCase
     }
 
     /**
-     * 設定内容に基づいて正しく Response オブジェクトが構築されることを確認します。
+     * キャッシュが無効な場合、設定内容に基づいて正しく Response オブジェクトが構築されることを確認します。
      *
      * @covers ::__construct
      * @covers ::build
+     * @covers ::isCacheEnabled
      */
-    public function testBuild(): void
+    public function testBuildWithoutCache(): void
     {
         $body = new TextBody("This is test");
         $obj  = $this->createTestObject();
         $res  = $obj->setBody($body)->build();
         $this->assertInstanceOf(Response::class, $res);
         $this->assertSame($body, $res->getBody());
+        $this->assertFalse($res->hasHeader("ETag"));
+    }
+
+    /**
+     * キャッシュが有効で、リクエストのヘッダーがキャッシュのメタデータと一致する場合、
+     * 304 Not Modified のステータスと EmptyBody を持つレスポンスが構築されることを確認します。
+     *
+     * @covers ::build
+     * @covers ::isCacheEnabled
+     */
+    public function testBuildWithCacheHitReturnsNotModified(): void
+    {
+        $view       = new OperatorTest_TestView();
+        $env        = $this->createTestWebEnvironment();
+        $expectedId = sha1(serialize($view));
+        $now        = $env->now();
+
+        $tmpdir = self::TMP_DIR;
+        $file   = "{$tmpdir}/data01/cache/{$expectedId}.dat";
+        file_put_contents($file, "Cached Content");
+        touch($file, $now);
+
+        // リクエストヘッダーがキャッシュの条件 (更新日時と ETag) に一致する状態にします
+        $res = $this->createTestObjectWithCache($now, $expectedId)
+            ->setEnablesCache(true)
+            ->setView($view)
+            ->build();
+        $this->assertEquals(Status::get304(), $res->getStatus());
+        $this->assertInstanceOf(EmptyBody::class, $res->getBody());
+
+        // 304 レスポンスにも ETag と Last-Modified が含まれていることを確認します
+        $this->assertTrue($res->hasHeader("ETag"));
+        $this->assertTrue($res->hasHeader("Last-Modified"));
+    }
+
+    /**
+     * キャッシュが有効だが、リクエストのヘッダーがキャッシュのメタデータと一致しない場合、
+     * キャッシュされたコンテンツを持つ TextBody に置換された 200 OK のレスポンスが構築されることを確認します。
+     *
+     * @covers ::build
+     * @covers ::isCacheEnabled
+     */
+    public function testBuildWithCacheMissReturnsNewVariant(): void
+    {
+        $view = new OperatorTest_TestView();
+
+        // ヘッダー情報が不一致 (更新日が過去等) になるよう意図的にずらしたリクエストを渡します
+        $res = $this->createTestObjectWithCache(100000000, "wrongetag")
+            ->setEnablesCache(true)
+            ->setView($view)
+            ->build();
+        $this->assertEquals(Status::getOK(), $res->getStatus());
+
+        // ViewBody がレンダリング結果の TextBody に置換されていることを確認します
+        $body = $res->getBody();
+        $this->assertInstanceOf(TextBody::class, $body);
+        $this->assertSame("Lorem Ipsum", $body->getOutput());
+        $this->assertSame("text/plain", $body->getContentType());
+
+        // 新しいキャッシュのメタデータがレスポンスヘッダーに付与されていることを確認します
+        $this->assertTrue($res->hasHeader("ETag"));
+        $this->assertTrue($res->hasHeader("Last-Modified"));
     }
 }
 
