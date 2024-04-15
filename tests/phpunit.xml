@@ -27,6 +27,7 @@
             <file>../src/Web/DefaultOutput.php</file>
             <file>../src/Web/Session/ParseException.php</file>
             <file>../src/Web/Session/SessionContainer.php</file>
+            <file>../src/Web/Cache/VariantContainer.php</file>
         </exclude>
     </coverage>
 </phpunit>

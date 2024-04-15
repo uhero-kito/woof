@@ -15,6 +15,10 @@ use Woof\Log\Logger;
 use Woof\Log\LoggerBuilder;
 use Woof\System\VariablesBuilder;
 use Woof\Util\ArrayProperties;
+use Woof\Web\Cache\DataVariantContainer;
+use Woof\Web\Cache\NullVariantContainer;
+use Woof\Web\Cache\VariantStorage;
+use Woof\Web\Cache\VariantStorageBuilder;
 use Woof\Web\Session\DataSessionContainer;
 use Woof\Web\Session\FileSessionContainer;
 use Woof\Web\Session\SessionStorage;
@@ -208,6 +212,84 @@ class WebEnvironmentTest extends TestCase
             [$obj2, $ss2],
             // Builder に SessionStorage が直接指定されている場合はそのオブジェクトを返す
             [$obj3, $ss3],
+        ];
+    }
+
+    /**
+     * 設定の有無や Builder への直接指定に応じて、適切な VariantStorage が構築・取得できることを確認します。
+     *
+     * @param WebEnvironment $obj 実行環境オブジェクト
+     * @param VariantStorage $expected 期待されるバリアントストレージ
+     * @covers ::getVariantStorage
+     * @dataProvider provideTestGetVariantStorage
+     */
+    public function testGetVariantStorage(WebEnvironment $obj, VariantStorage $expected): void
+    {
+        $this->assertEquals($expected, $obj->getVariantStorage());
+    }
+
+    /**
+     * testGetVariantStorage() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
+     */
+    public function provideTestGetVariantStorage(): array
+    {
+        $this->setUp();
+        $tmpdir = self::TEST_DIR . "/tmp";
+
+        $logger = (new LoggerBuilder())
+            ->setLogLevel(Logger::LEVEL_INFO)
+            ->setStorage(new DataLogStorage(new FileDataStorage("{$tmpdir}/data01"), "logdir/test"))
+            ->build();
+
+        $dataStorage = new FileDataStorage("{$tmpdir}/data01");
+
+        $vs1 = (new VariantStorageBuilder())
+            ->setVariantContainer(new DataVariantContainer($dataStorage, "cache", ".dat", Logger::getNopLogger()))
+            ->setMaxAge(3600)
+            ->setGcProbability(0.01)
+            ->build();
+        $vs2 = (new VariantStorageBuilder())
+            ->setVariantContainer(new DataVariantContainer($dataStorage, "cache01", ".bin", $logger))
+            ->setMaxAge(1800)
+            ->setGcProbability(0.2)
+            ->build();
+        $vs3 = (new VariantStorageBuilder())
+            ->setVariantContainer(new DataVariantContainer($dataStorage, "cache02"))
+            ->setMaxAge(600)
+            ->setGcProbability(0.5)
+            ->build();
+        $vs4 = (new VariantStorageBuilder())
+            ->setVariantContainer(NullVariantContainer::getInstance())
+            ->setGcProbability(0.0)
+            ->build();
+
+        $obj1 = $this->createEmptyBuilder()
+            ->setConfigDir("{$tmpdir}/conf01")
+            ->setDataStorageDir("{$tmpdir}/data01")
+            ->build();
+        $obj2 = $this->createEmptyBuilder()
+            ->setConfigDir("{$tmpdir}/conf02")
+            ->setDataStorageDir("{$tmpdir}/data01")
+            ->build();
+        $obj3 = $this->createEmptyBuilder()
+            ->setVariantStorage($vs3)
+            ->setConfigDir("{$tmpdir}/conf01")
+            ->build();
+        $obj4 = $this->createEmptyBuilder()
+            ->setConfigDir("{$tmpdir}/conf02")
+            ->build();
+
+        return [
+            // cache の設定が存在しない場合はデフォルトの VariantStorage を返す
+            [$obj1, $vs1],
+            // DataStorage が存在し、設定が存在する場合は設定に基づく VariantStorage を返す
+            [$obj2, $vs2],
+            // Builder に VariantStorage が直接指定されている場合はそのオブジェクトを返す
+            [$obj3, $vs3],
+            // DataStorage が存在しない場合は、設定ファイルの内容に関わらずダミーの VariantStorage を返す
+            [$obj4, $vs4],
         ];
     }
 

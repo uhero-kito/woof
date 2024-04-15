@@ -4,6 +4,7 @@ namespace Woof\Web;
 
 use Woof\EnvironmentBuilder;
 use Woof\Http\HeaderParser;
+use Woof\Web\Cache\VariantStorage;
 use Woof\Web\Session\SessionStorage;
 
 /**
@@ -17,6 +18,13 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
      * @var SessionStorage
      */
     private $sessionStorage;
+
+    /**
+     * 設定する VariantStorage オブジェクトです。
+     *
+     * @var VariantStorage
+     */
+    private $variantStorage;
 
     /**
      * 設定する HeaderParser オブジェクトです。
@@ -60,6 +68,43 @@ class WebEnvironmentBuilder extends EnvironmentBuilder
     public function getSessionStorage(): SessionStorage
     {
         return $this->sessionStorage;
+    }
+
+    /**
+     * キャッシュされた View の出力結果を管理する VariantStorage を設定します。
+     *
+     * 通常は設定ファイル (Config) の内容をもとに標準の VariantStorage が自動で構築されるため、
+     * 基本的にこのメソッドを呼び出す必要はありません。
+     * Redis やデータベースなどを利用した独自のキャッシュ管理機構を組み込みたい場合や、
+     * テスト時にモックオブジェクトを注入したい場合などに使用します。
+     *
+     * @param VariantStorage $variantStorage カスタムの VariantStorage
+     * @return WebEnvironmentBuilder このオブジェクト自身
+     */
+    public function setVariantStorage(VariantStorage $variantStorage): self
+    {
+        $this->variantStorage = $variantStorage;
+        return $this;
+    }
+
+    /**
+     * VariantStorage が明示的に設定されているかを判定します。
+     *
+     * @return bool 設定されている場合に true
+     */
+    public function hasVariantStorage(): bool
+    {
+        return ($this->variantStorage !== null);
+    }
+
+    /**
+     * 明示的に設定された VariantStorage を取得します。
+     *
+     * @return VariantStorage
+     */
+    public function getVariantStorage(): VariantStorage
+    {
+        return $this->variantStorage;
     }
 
     /**

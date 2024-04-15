@@ -1,0 +1,6 @@
+{
+    "dirname": "cache01",
+    "suffix": ".bin",
+    "max-age": 1800,
+    "gc-probability": 0.2
+}

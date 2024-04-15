@@ -6,15 +6,22 @@ use PHPUnit\Framework\TestCase;
 use TestHelper;
 use Woof\Http\ContentDisposition;
 use Woof\Http\HttpDate;
+use Woof\Http\QualityValues;
 use Woof\Http\Request;
 use Woof\Http\RequestBuilder;
 use Woof\Http\Response;
 use Woof\Http\Response\Cookie;
+use Woof\Http\Response\EmptyBody;
 use Woof\Http\Response\TextBody;
 use Woof\Http\ResponseBuilder;
 use Woof\Http\Status;
 use Woof\Http\TextField;
+use Woof\Locale;
+use Woof\Log\FileLogStorage;
+use Woof\Log\Logger;
+use Woof\Log\LoggerBuilder;
 use Woof\Resources;
+use Woof\System\FixedClock;
 use Woof\System\VariablesBuilder;
 
 /**
@@ -35,21 +42,41 @@ class OperatorTest extends TestCase
     const TMP_DIR = TEST_DATA_DIR . "/Web/Operator/tmp";
 
     /**
+     * テスト実行前の元のタイムゾーン設定を保持します。
+     *
+     * @var string
+     */
+    private $defaultTimezone;
+
+    /**
      * 一時ディレクトリをクリーンアップし、テスト用データをコピーします。
+     * また、テスト用に PHP の設定値をバックアップします。
      */
     protected function setUp(): void
     {
-        $tmpdir  = self::TMP_DIR;
+        $tmpdir = self::TMP_DIR;
         TestHelper::cleanDirectory($tmpdir);
         TestHelper::copyDirectory(TEST_DATA_DIR . "/Web/Operator/subjects", $tmpdir);
+
+        $this->defaultTimezone = ini_set("timezone", "Asia/Tokyo");
+    }
+
+    /**
+     * テスト用に変更した PHP の設定値をもとに戻します。
+     */
+    protected function tearDown(): void
+    {
+        ini_set("timezone", $this->defaultTimezone);
     }
 
     /**
      * テスト用の WebEnvironment インスタンスを生成して返します。
      *
+     * @param string $confdir
+     * @param Logger $logger
      * @return WebEnvironment
      */
-    private function createTestWebEnvironment(): WebEnvironment
+    private function createTestWebEnvironment($confdir = "conf01", Logger $logger = null): WebEnvironment
     {
         $server = [
             "HTTP_ACCEPT_ENCODING"   => "gzip, deflate",
@@ -68,10 +95,11 @@ class OperatorTest extends TestCase
 
         $tmpdir = self::TMP_DIR;
         return (new WebEnvironmentBuilder())
-            ->setConfigDir("{$tmpdir}/conf01")
+            ->setConfigDir("{$tmpdir}/{$confdir}")
             ->setResourcesDir("{$tmpdir}/res01")
             ->setDataStorageDir("{$tmpdir}/data01")
             ->setVariables($var)
+            ->setLogger($logger ?? Logger::getNopLogger())
             ->build();
     }
 
@@ -94,19 +122,26 @@ class OperatorTest extends TestCase
 
     /**
      * キャッシュ検証用のヘッダーを持つ Request オブジェクトを生成して返します。
+     * 引数で If-Modified-Since と If-None-Match の値を指定できます。
      *
+     * @param int|null $ifModifiedSince Unix time (指定しない場合はヘッダーをセットしません)
+     * @param string|null $ifNoneMatch ETag 値 (指定しない場合はヘッダーをセットしません)
      * @return Request
      */
-    private function createRequestWithCache(): Request
+    private function createRequestWithCache(int $ifModifiedSince = null, string $ifNoneMatch = null): Request
     {
-        return (new RequestBuilder())
+        $builder = (new RequestBuilder())
             ->setScheme("https")
             ->setHost("www.example.com")
             ->setPath("/test/css/style.css")
-            ->setUri("/test/css/style.css")
-            ->setHeader(new HttpDate("If-Modified-Since", 1555555555))
-            ->setHeader(new TextField("If-None-Match", "abcdefabcdef"))
-            ->build();
+            ->setUri("/test/css/style.css");
+        if ($ifModifiedSince !== null) {
+            $builder->setHeader(new HttpDate("If-Modified-Since", $ifModifiedSince));
+        }
+        if ($ifNoneMatch !== null) {
+            $builder->setHeader(new TextField("If-None-Match", $ifNoneMatch));
+        }
+        return $builder->build();
     }
 
     /**
@@ -152,11 +187,13 @@ class OperatorTest extends TestCase
     /**
      * キャッシュ検証用のリクエストを持ったテスト用 Operator を生成して返します。
      *
+     * @param int|null $ifModifiedSince Unix time
+     * @param string|null $ifNoneMatch ETag 値
      * @return Operator
      */
-    private function createTestObjectWithCache(): Operator
+    private function createTestObjectWithCache(int $ifModifiedSince = null, string $ifNoneMatch = null): Operator
     {
-        return new Operator($this->createRequestWithCache(), $this->createTestWebEnvironment());
+        return new Operator($this->createRequestWithCache($ifModifiedSince, $ifNoneMatch), $this->createTestWebEnvironment());
     }
 
     /**
@@ -289,6 +326,24 @@ class OperatorTest extends TestCase
 
         $cookieList = $obj->getResponseBuilder()->getCookieList();
         $this->assertFalse(array_key_exists("test_sessid", $cookieList));
+    }
+
+    /**
+     * キャッシュの有効無効フラグの設定と取得が正しく機能することを確認します。
+     *
+     * @covers ::setEnablesCache
+     * @covers ::getEnablesCache
+     */
+    public function testEnablesCache(): void
+    {
+        $obj = $this->createTestObject();
+        $this->assertFalse($obj->getEnablesCache());
+
+        $this->assertSame($obj, $obj->setEnablesCache(true));
+        $this->assertTrue($obj->getEnablesCache());
+
+        $this->assertSame($obj, $obj->setEnablesCache(false));
+        $this->assertFalse($obj->getEnablesCache());
     }
 
     /**
@@ -437,16 +492,38 @@ class OperatorTest extends TestCase
     /**
      * キャッシュ制御ヘッダーをもとに、コンテンツが変更されていないかどうか正しく判定できることを確認します。
      *
+     * @param int|null    $reqTime  リクエストの If-Modified-Since ヘッダーの値
+     * @param string|null $reqEtag  リクエストの If-None-Match ヘッダーの値
+     * @param bool        $expected 期待される判定結果
      * @covers ::checkNotModified
+     * @dataProvider provideTestCheckNotModified
      */
-    public function testCheckNotModified(): void
+    public function testCheckNotModified($reqTime, $reqEtag, bool $expected): void
     {
         $time = 1555555555;
         $etag = "abcdefabcdef";
-        $obj1 = $this->createTestObject();
-        $obj2 = $this->createTestObjectWithCache();
-        $this->assertFalse($obj1->checkNotModified($time, $etag));
-        $this->assertTrue($obj2->checkNotModified($time, $etag));
+        $obj  = $this->createTestObjectWithCache($reqTime, $reqEtag);
+        $this->assertSame($expected, $obj->checkNotModified($time, $etag));
+    }
+
+    /**
+     * testCheckNotModified() のためのテストデータを提供します。
+     *
+     * @return array テストデータの配列
+     */
+    public function provideTestCheckNotModified(): array
+    {
+        $time = 1555555555;
+        $etag = "abcdefabcdef";
+
+        return [
+            "no-headers"                 => [null, null, false],
+            "both-match"                 => [$time, $etag, true],
+            "only-if-none-match"         => [null, $etag, true],
+            "only-if-modified-since"     => [$time, null, true],
+            "if-none-match-mismatch"     => [$time, "wrongetag", false],
+            "if-modified-since-mismatch" => [$time - 1000, $etag, false],
+        ];
     }
 
     /**
@@ -466,18 +543,210 @@ class OperatorTest extends TestCase
     }
 
     /**
-     * 設定内容に基づいて正しく Response オブジェクトが構築されることを確認します。
+     * Operator::getLocale() の引数にロケールが指定されていない場合、
+     * Accept-Language -> App (Config) -> (System は省略) の順に連結されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleUsesAcceptLanguageWhenArgumentIsNull(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["ja-JP" => 1.0, "en-US" => 0.8]))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf02");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+        $chain    = [];
+        $current  = $locale;
+        do {
+            $chain[] = (string) $current;
+        } while ($current->canFallback() && ($current = $current->fallback()));
+
+        // システムロケール (es-ES) を排除し、zh-CN までで完結することを確認します
+        $expected = ["ja-JP", "ja", "zh-CN", "zh"];
+        $this->assertSame($expected, $chain);
+    }
+
+    /**
+     * Operator::getLocale() の引数にロケールが指定された場合、
+     * Accept-Language が上書き (無視) され、引数 -> App (Config) -> (System は省略) の順に連結されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleOverridesAcceptLanguageWithArgument(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["ja-JP" => 1.0, "en-US" => 0.8]))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf02");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale(Locale::parseLocale("it-IT"));
+        $chain    = [];
+        $current  = $locale;
+        do {
+            $chain[] = (string) $current;
+        } while ($current->canFallback() && ($current = $current->fallback()));
+
+        // Accept-Language の "ja-JP", "en-US" はチェーンに含まれないことを確認します
+        $expected = ["it-IT", "it", "zh-CN", "zh"];
+        $this->assertSame($expected, $chain);
+    }
+
+    /**
+     * 有効なロケールが一切指定されていない場合、安全にルートロケールが返されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleReturnsRootWhenEmpty(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new TextField("Accept-Language", ""))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf03");
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+
+        $this->assertSame(Locale::getRoot(), $locale);
+    }
+
+    /**
+     * 不正なロケール文字列のパースに失敗した場合、例外が吸収され、
+     * Logger オブジェクトを経由してログファイルにログレベル DEBUG で出力されることを確認します。
+     *
+     * @covers ::getLocale
+     * @covers ::<private>
+     */
+    public function testGetLocaleLogsErrorOnInvalidLocale(): void
+    {
+        $request = (new RequestBuilder())
+            ->setScheme("https")
+            ->setHost("www.example.com")
+            ->setPath("/")
+            ->setUri("/")
+            ->setHeader(new QualityValues("Accept-Language", ["invalid-locale-format" => 1.0]))
+            ->build();
+
+        $time   = 1555555555; // 2019-04-18 02:45:55 (UTC)
+        $logdir = self::TMP_DIR . "/logs";
+        $logger = (new LoggerBuilder())
+            ->setLogLevel(Logger::LEVEL_DEBUG)
+            ->setClock(new FixedClock($time))
+            ->setStorage(new FileLogStorage($logdir))
+            ->build();
+
+        $env      = $this->createTestWebEnvironment("conf03", $logger);
+        $operator = new Operator($request, $env);
+        $locale   = $operator->getLocale();
+
+        $this->assertSame(Locale::getRoot(), $locale);
+
+        $datePart = date("Ymd", $time);
+        $logFile  = "{$logdir}/app-{$datePart}.log";
+        $this->assertFileExists($logFile);
+
+        $logContent       = file_get_contents($logFile);
+        $exceptionMessage = "Invalid or unsupported subtag: format in locale: invalid-locale-format";
+        $logMessage       = "Failed to parse locale string 'invalid-locale-format': {$exceptionMessage}";
+        $datePartLong     = date("Y-m-d H:i:s", $time);
+        $expectedLogLine  = "[{$datePartLong}][DEBUG] {$logMessage}" . PHP_EOL;
+
+        $this->assertSame($expectedLogLine, $logContent);
+    }
+
+    /**
+     * キャッシュが無効な場合、設定内容に基づいて正しく Response オブジェクトが構築されることを確認します。
      *
      * @covers ::__construct
      * @covers ::build
+     * @covers ::isCacheEnabled
      */
-    public function testBuild(): void
+    public function testBuildWithoutCache(): void
     {
         $body = new TextBody("This is test");
         $obj  = $this->createTestObject();
         $res  = $obj->setBody($body)->build();
         $this->assertInstanceOf(Response::class, $res);
         $this->assertSame($body, $res->getBody());
+        $this->assertFalse($res->hasHeader("ETag"));
+    }
+
+    /**
+     * キャッシュが有効で、リクエストのヘッダーがキャッシュのメタデータと一致する場合、
+     * 304 Not Modified のステータスと EmptyBody を持つレスポンスが構築されることを確認します。
+     *
+     * @covers ::build
+     * @covers ::isCacheEnabled
+     */
+    public function testBuildWithCacheHitReturnsNotModified(): void
+    {
+        $view       = new OperatorTest_TestView();
+        $env        = $this->createTestWebEnvironment();
+        $expectedId = sha1(serialize($view));
+        $now        = $env->now();
+
+        $tmpdir = self::TMP_DIR;
+        $file   = "{$tmpdir}/data01/cache/{$expectedId}.dat";
+        file_put_contents($file, "Cached Content");
+        touch($file, $now);
+
+        // リクエストヘッダーがキャッシュの条件 (更新日時と ETag) に一致する状態にします
+        $res = $this->createTestObjectWithCache($now, $expectedId)
+            ->setEnablesCache(true)
+            ->setView($view)
+            ->build();
+        $this->assertEquals(Status::get304(), $res->getStatus());
+        $this->assertInstanceOf(EmptyBody::class, $res->getBody());
+
+        // 304 レスポンスにも ETag と Last-Modified が含まれていることを確認します
+        $this->assertTrue($res->hasHeader("ETag"));
+        $this->assertTrue($res->hasHeader("Last-Modified"));
+    }
+
+    /**
+     * キャッシュが有効だが、リクエストのヘッダーがキャッシュのメタデータと一致しない場合、
+     * キャッシュされたコンテンツを持つ TextBody に置換された 200 OK のレスポンスが構築されることを確認します。
+     *
+     * @covers ::build
+     * @covers ::isCacheEnabled
+     */
+    public function testBuildWithCacheMissReturnsNewVariant(): void
+    {
+        $view = new OperatorTest_TestView();
+
+        // ヘッダー情報が不一致 (更新日が過去等) になるよう意図的にずらしたリクエストを渡します
+        $res = $this->createTestObjectWithCache(100000000, "wrongetag")
+            ->setEnablesCache(true)
+            ->setView($view)
+            ->build();
+        $this->assertEquals(Status::getOK(), $res->getStatus());
+
+        // ViewBody がレンダリング結果の TextBody に置換されていることを確認します
+        $body = $res->getBody();
+        $this->assertInstanceOf(TextBody::class, $body);
+        $this->assertSame("Lorem Ipsum", $body->getOutput());
+        $this->assertSame("text/plain", $body->getContentType());
+
+        // 新しいキャッシュのメタデータがレスポンスヘッダーに付与されていることを確認します
+        $this->assertTrue($res->hasHeader("ETag"));
+        $this->assertTrue($res->hasHeader("Last-Modified"));
     }
 }
 
